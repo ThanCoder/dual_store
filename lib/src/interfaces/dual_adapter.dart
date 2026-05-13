@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dual_store/dual_store.dart';
@@ -72,25 +71,4 @@ abstract class DualAdapter<T extends DualModel> {
   ///
   /// memory safety through streaming.
   BigDataType get bigDataType => BigDataType.none;
-
-  /// Calculates the total size (in bytes) of the Big Data content.
-  ///
-  /// This value is stored in the header (8-byte field) and is used
-  ///
-  /// to determine the read length and progress calculation.
-  int getBigDataSize(T value) => 0;
-
-  /// Provides a stream of bytes for the Big Data section.
-  ///
-  /// **Memory Safety:** Using a stream ensures that even multi-gigabyte
-  ///
-  /// payloads can be written to disk without loading the entire
-  ///
-  /// content into RAM.
-  Stream<List<int>> getBigDataStream(T value) => Stream.empty();
-
-  /// `stringSource` to `bigDataStream`
-  Stream<List<int>> stringEncodeStream(String stringSource) {
-    return Stream.value(utf8.encode(stringSource));
-  }
 }

@@ -14,21 +14,20 @@ void main() async {
   final box = db.getBox<User>();
   final contentBox = db.getBox<UserContent>();
 
-  // await contentBox.deleteAll();
-
   // await contentBox.addWithBigDataString(
-  //   UserContent(userId: 10),
-  //   bigString: 'i am big string',
+  //   UserContent(userId: 1),
+  //   bigString: 'i am big string two',
   // );
-  // await box.add(User(name: 'user one', age: 21));
-  // await box.add(User(name: 'user two', age: 24));
-  // await box.add(User(name: 'user three', age: 20));
-  final contens = await contentBox.getAll();
-  print(contens);
-  // await box
-  final list = await box.getAll();
 
-  print(list);
+  // await db.compact();
+
+  // await contentBox.deleteAll();
+  // await box.deleteAll();
+  for (var content in await contentBox.getAll()) {
+    print(content);
+    final data = await contentBox.readBigDataAsString(content);
+    print('data: $data');
+  }
 
   print('lastIndex: ${db.lastIndex}');
   print('deletedCount: ${db.deletedCount}');

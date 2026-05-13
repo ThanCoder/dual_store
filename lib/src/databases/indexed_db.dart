@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dual_store/src/databases/dual_record.dart';
 import 'package:dual_store/src/databases/record_meta.dart';
@@ -166,15 +167,7 @@ class IndexedDb {
 
   Future<void> close() async {
     if (!isOpened) return;
-    await _writeRaf.close();
-    await _readRaf.close();
-    _lastIndex = 0;
-    _allRecords.clear();
-    _adapterOfRecords.clear();
-    _parentOfRecords.clear();
-    _deletedCount = 0;
-    _deletedSize = 0;
-    _isOpened = false;
+    await _clearCache();
   }
 
   // ** Compact **
@@ -187,7 +180,57 @@ class IndexedDb {
     }
   }
 
+  /// When Database Deleted Size Over More Than > Compact Calculate. Will Compact
   Future<void> compact() async {
     if (_deletedCount == 0) return;
+    final compactFile = File('${dbFile.path}.compact-tem');
+    final compactRaf = await compactFile.open(mode: FileMode.write);
+
+    // write header
+    // await compactRaf.writeFrom(utf8.encode(magic));
+    // await compactRaf.writeByte(version);
+
+    final bufferSize = _config.compactBufferSize;
+    final buffer = Uint8List(bufferSize);
+
+    for (var meta in _allRecords.values) {
+      // go meta header
+      await readRaf.setPosition(meta.offset);
+      int bytesToRead = meta.recordSize;
+
+      while (bytesToRead > 0) {
+        final currentReadSize = bytesToRead > bufferSize
+            ? bufferSize
+            : bytesToRead;
+
+        final bytesRead = await readRaf.readInto(buffer, 0, currentReadSize);
+        // ရေးထည့်မယ်
+        await compactRaf.writeFrom(buffer, 0, bytesRead);
+
+        //ဖတ်ပြီးသားကို နှုတ်ချထား
+        bytesToRead -= currentReadSize;
+      }
+    }
+
+    await compactRaf.close();
+    //rename
+    if (dbFile.existsSync()) {
+      await dbFile.delete();
+    }
+    await compactFile.rename(dbFile.path);
+    await _clearCache();
+    await load();
+  }
+
+  Future<void> _clearCache() async {
+    await _writeRaf.close();
+    await _readRaf.close();
+    _lastIndex = 0;
+    _allRecords.clear();
+    _adapterOfRecords.clear();
+    _parentOfRecords.clear();
+    _deletedCount = 0;
+    _deletedSize = 0;
+    _isOpened = false;
   }
 }

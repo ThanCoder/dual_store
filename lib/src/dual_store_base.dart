@@ -80,4 +80,13 @@ class DualStore {
   Future<void> close() async {
     await _indexedDb.close();
   }
+
+  ///Maby Compact
+  Future<void> mabyCompact() async {
+    await _indexedDb.mabyCompact();
+  }
+
+  Future<void> compact() async {
+    await _indexedDb.compact();
+  }
 }

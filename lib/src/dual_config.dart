@@ -17,10 +17,22 @@ class DualConfig {
   /// exceeds this value.
   final int willCompactDeletedSize;
 
+  ///
+  /// Compact Write Memory Buffer Size
+  ///
+  final int compactBufferSize;
+
+  ///
+  /// When Compact Finish Will Rename Old Database Backup File.
+  ///
+  final bool saveLastCompactOldDBBackupFile;
+
   const DualConfig({
     this.useRamSmallData = true,
     this.autoCompact = true,
     this.willCompactDeletedCount = 1000,
     this.willCompactDeletedSize = 50 * 1024 * 1024, // 50 MB
+    this.compactBufferSize = 64 * 1024, //64kb
+    this.saveLastCompactOldDBBackupFile = false,
   });
 }

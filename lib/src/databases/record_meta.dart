@@ -116,7 +116,7 @@ class RecordMeta {
   ///
   /// String အဖြစ် ပြန်ယူမယ်
   Future<String> readBigDataAsString(
-    String filePath, {
+    RandomAccessFile raf, {
     int maxRamSize = 50 * 1024 * 1024,
   }) async {
     if (bigDataSize > maxRamSize) {
@@ -124,15 +124,17 @@ class RecordMeta {
         "Data is too large ($bigDataSize bytes) to load as a String. Please use readBigData() stream instead.",
       );
     }
-    final stream = await readBigData(filePath);
-    return await stream.transform(utf8.decoder).join();
+    await raf.setPosition(bigDataStartOffset);
+
+    final data = await raf.read(bigDataSize);
+    return utf8.decode(data);
   }
 
   /// Read Big Data From Database
   ///
   /// JSON အဖြစ် ပြန်ယူမယ်
   Future<dynamic> readBigDataAsJson(
-    String filePath, {
+    RandomAccessFile raf, {
     int maxRamSize = 50 * 1024 * 1024,
   }) async {
     if (bigDataSize > maxRamSize) {
@@ -140,8 +142,10 @@ class RecordMeta {
         "Data is too large ($bigDataSize bytes) to load as a String. Please use readBigData() stream instead.",
       );
     }
-    final content = await readBigDataAsString(filePath);
-    return jsonDecode(content);
+    await raf.setPosition(bigDataStartOffset);
+
+    final data = await raf.read(bigDataSize);
+    return jsonDecode(utf8.decode(data));
   }
 
   /// Read Big Data From Database

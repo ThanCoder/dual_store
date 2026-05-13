@@ -34,8 +34,8 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
       parentId: _adapter.getParentId(value),
       smallData: _adapter.toSmallData(value, id, smallEncoder),
       bigDataType: _adapter.bigDataType,
-      bigData: bigDataStream ?? _adapter.getBigDataStream(value),
-      bigDataSize: bigDataSize ?? _adapter.getBigDataSize(value),
+      bigData: bigDataStream ?? Stream.empty(),
+      bigDataSize: bigDataSize ?? 0,
     );
     await _indexedDb.add(record, onProgress: onProgress);
   }
@@ -142,7 +142,7 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
     final meta = (value as DualModel).meta;
     if (meta == null) return null;
     if (meta.smallDataSize == 0) return null;
-    return await meta.readBigDataAsString(_indexedDb.dbFile.path);
+    return await meta.readBigDataAsString(_indexedDb.readRaf);
   }
 
   @override
@@ -155,7 +155,7 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
     final meta = (value as DualModel).meta;
     if (meta == null) return null;
     if (meta.smallDataSize == 0) return null;
-    return await meta.readBigDataAsJson(_indexedDb.dbFile.path);
+    return await meta.readBigDataAsJson(_indexedDb.readRaf);
   }
 
   @override
