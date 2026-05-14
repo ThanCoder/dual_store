@@ -73,19 +73,17 @@ class IndexedDb {
 
   /// get all records of meta
   Iterable<RecordMeta> getAll({int? parentId, int? adapterTypId}) {
-    if (parentId != null || adapterTypId != null) {
-      final results = <RecordMeta>[];
-      for (var meta in _allRecords.values) {
-        if (parentId != null && parentId == meta.parentId) {
-          results.add(meta);
-        }
-        if (adapterTypId != null && adapterTypId == meta.adapterTypId) {
-          results.add(meta);
-        }
-      }
-      return results;
-    }
-    return _allRecords.values;
+    // logic ကို functional approach နဲ့ ရေးတာ ပိုရှင်းပါတယ်
+    return _allRecords.values.where((meta) {
+      // parentId ပေးထားရင် ကိုက်ညီရမယ်
+      final matchParent = parentId == null || meta.parentId == parentId;
+
+      // adapterTypId ပေးထားရင် ကိုက်ညီရမယ်
+      final matchAdapter =
+          adapterTypId == null || meta.adapterTypId == adapterTypId;
+
+      return matchParent && matchAdapter;
+    });
   }
 
   /// Add Record

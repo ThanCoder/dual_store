@@ -22,35 +22,86 @@ To store your objects, you must create a `DualAdapter`.
 ```dart
 class UserAdapter extends DualAdapter<User> {
   @override
-  int get adapterTypId => 1; // Unique ID for this type
+  int get adapterTypeId => 1;
 
   @override
-  User fromSmallData(Uint8List data) {
-    final decoder = SmallDataDecoder(data);
+  int getId(User value) {
+    return value.id;
+  }
+
+  @override
+  User fromSmallData(SmallDataDecoder decoder) {
     return User(
-      id: decoder.readInt(),     // Position 1
-      name: decoder.readString(), // Position 2
-      age: decoder.readInt(),    // Position 3
+      id: decoder.getInt(1), //generated auto id
+      name: decoder.getString(2),
+      age: decoder.getInt(3),
     );
   }
 
   @override
-  Uint8List toSmallData(User value) {
-    final data = SmallDataEncoder();
-    data.writeInt(value.id);      // Position 1
-    data.writeString(value.name);  // Position 2
-    data.writeInt(value.age);     // Position 3
-    return data.finishedBytes;
+  Uint8List toSmallData(
+    User value,
+    int generatedAutoId,
+    SmallDataEncoder encoder,
+  ) {
+    encoder.writeInt(1, generatedAutoId); //write auto id
+    encoder.writeString(2, value.name);
+    encoder.writeInt(3, value.age);
+    return encoder.finishedBytes;
+  }
+}
+
+class User extends DualModel {
+  final int id; //auto id
+  final String name;
+  final int age;
+  User({this.id = -1, required this.name, required this.age});
+
+  @override
+  String toString() => 'User(id: $id, name: $name, age: $age)';
+}
+
+// content
+class UserContentAdapter extends DualAdapter<UserContent> {
+  @override
+  int get adapterTypeId => 2;
+
+  @override
+  int getParentId(UserContent value) {
+    return value.userId;
+  }
+
+  @override
+  int getId(UserContent value) {
+    return value.id;
+  }
+
+  @override
+  UserContent fromSmallData(SmallDataDecoder decoder) {
+    return UserContent(id: decoder.getInt(1), userId: decoder.getInt(2));
+  }
+
+  @override
+  Uint8List toSmallData(
+    UserContent value,
+    int generatedAutoId,
+    SmallDataEncoder encoder,
+  ) {
+    encoder.writeInt(1, generatedAutoId);
+    encoder.writeInt(2, value.userId);
+    return encoder.finishedBytes;
   }
 
   @override
   BigDataType get bigDataType => BigDataType.stringText;
+}
+
+class UserContent extends DualModel {
+  final int id;
+  final int userId;
+  UserContent({this.id = -1, required this.userId});
 
   @override
-  int getBigDataSize(User value) => utf8.encode(value.bio).length;
-
-  @override
-  Stream<List<int>> getBigDataStream(User value) =>
-      Stream.value(utf8.encode(value.bio));
+  String toString() => 'UserContent(id: $id, userId: $userId)';
 }
 ```

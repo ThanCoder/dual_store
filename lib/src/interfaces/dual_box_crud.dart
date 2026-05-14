@@ -1,11 +1,17 @@
 typedef FindFuncCallback<T> = bool Function(T value);
 
 abstract class DualBoxCrud<T> {
-  /// ### Find One
-  Future<T?> findOne(FindFuncCallback<T> test, {int? parentId});
+  /// ### Get One
+  Future<T?> getOne(FindFuncCallback<T> test, {int? parentId});
 
-  /// ### Find One Stream
-  Stream<T?> findOneStream(FindFuncCallback<T> test, {int? parentId});
+  /// ### Find Query
+  Future<List<T>> find(FindFuncCallback<T> test, {int? parentId});
+
+  /// ### Get One Stream
+  Stream<T?> getOneStream(FindFuncCallback<T> test, {int? parentId});
+
+  /// ### Find Query
+  Stream<List<T>> findStream(FindFuncCallback<T> test, {int? parentId});
 
   ///
   /// ### Get All `List<T>`
@@ -25,11 +31,48 @@ abstract class DualBoxCrud<T> {
   /// Return -> if deleted ? true : false
   Future<bool> deleteById(int id);
 
+  ///
+  /// Delete By Id With List
+  ///
+  Future<void> deleteByIdList(List<int> ids);
+
   /// Update By Id
   ///
   /// Return -> if updated ? true : false
   ///
   Future<bool> updateById(int id, T value);
+
+  /// Update By Id With Big String
+  ///
+  /// Return -> if updated ? true : false
+  ///
+  Future<bool> updateByIdWithBigString(
+    int id,
+    T value, {
+    required String bigString,
+  });
+
+  /// Update By Id With Big Map
+  ///
+  /// Return -> if updated ? true : false
+  ///
+  Future<bool> updateByIdWithBigMap(
+    int id,
+    T value, {
+    required Map<String, dynamic> bigMap,
+  });
+
+  /// Update By Id With Big Data
+  ///
+  /// Return -> if updated ? true : false
+  ///
+  Future<bool> updateByIdWithBigData(
+    int id,
+    T value, {
+    Stream<List<int>>? bigDataStream,
+    int? bigDataSize,
+    void Function(double progerss)? onProgress,
+  });
 
   /// Read Big Data From Database
   Future<Stream<List<int>>?> readBigData(T value);

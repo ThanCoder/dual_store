@@ -37,6 +37,55 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
 
   @override
   Future<bool> updateById(int id, T value) async {
+    return await updateByIdWithBigData(id, value);
+  }
+
+  @override
+  Future<bool> updateByIdWithBigMap(
+    int id,
+    T value, {
+    required Map<String, dynamic> bigMap,
+  }) async {
+    return await updateByIdWithBigString(
+      id,
+      value,
+      bigString: jsonEncode(bigMap),
+    );
+  }
+
+  @override
+  Future<bool> updateByIdWithBigString(
+    int id,
+    T value, {
+    required String bigString,
+  }) async {
+    if (_indexedDb.config.useBigDataGzipEncoder) {
+      final bytes = gzip.encode(utf8.encode(bigString));
+      return await updateByIdWithBigData(
+        id,
+        value,
+        bigDataSize: bytes.length,
+        bigDataStream: Stream.value(bytes),
+      );
+    } else {
+      final bytes = utf8.encode(bigString);
+      return await updateByIdWithBigData(
+        id,
+        value,
+        bigDataSize: bytes.length,
+        bigDataStream: Stream.value(bytes),
+      );
+    }
+  }
+
+  @override
+  Future<bool> updateByIdWithBigData(
+    int id,
+    T value, {
+    Stream<List<int>>? bigDataStream,
+    int? bigDataSize,
+    void Function(double progerss)? onProgress,
+  }) async {
     final smallEncoder = SmallDataEncoder();
 
     final record = DualRecord(
@@ -45,8 +94,8 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
       parentId: _adapter.getParentId(value),
       smallData: _adapter.toSmallData(value, id, smallEncoder),
       bigDataType: _adapter.bigDataType,
-      bigDataSize: 0,
-      bigData: Stream.empty(),
+      bigDataSize: bigDataSize ?? 0,
+      bigData: bigDataStream ?? Stream.empty(),
     );
     return await _indexedDb.updateById(id, record);
   }
@@ -154,7 +203,7 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
   }
 
   @override
-  Future<T?> findOne(FindFuncCallback<T> test, {int? parentId}) async {
+  Future<T?> getOne(FindFuncCallback<T> test, {int? parentId}) async {
     for (var val in await getAll(parentId: parentId)) {
       if (test(val)) return val;
     }
@@ -162,7 +211,18 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
   }
 
   @override
-  Stream<T?> findOneStream(FindFuncCallback<T> test, {int? parentId}) async* {
+  Future<List<T>> find(FindFuncCallback<T> test, {int? parentId}) async {
+    final results = <T>[];
+    for (var val in await getAll(parentId: parentId)) {
+      if (test(val)) {
+        results.add(val);
+      }
+    }
+    return results;
+  }
+
+  @override
+  Stream<T?> getOneStream(FindFuncCallback<T> test, {int? parentId}) async* {
     await for (var val in getAllStream(parentId: parentId)) {
       if (test(val)) {
         yield val;
@@ -190,6 +250,26 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
   }
 
   @override
+  Stream<List<T>> findStream(FindFuncCallback<T> test, {int? parentId}) async* {
+    final results = <T>[];
+
+    for (var meta in _indexedDb.getAll(
+      parentId: parentId,
+      adapterTypId: _adapter.adapterTypeId,
+    )) {
+      final smallDataBytes = await meta.readSmallData(_indexedDb.readRaf);
+      final smallData =
+          _adapter.fromSmallData(SmallDataDecoder(smallDataBytes)) as DualModel;
+      // set meta
+      smallData.autoId = meta.id;
+      smallData.meta = meta;
+      results.add(smallData as T);
+      // print(meta);
+    }
+    yield results;
+  }
+
+  @override
   Future<Stream<List<int>>?> readBigData(T value) async {
     if (_adapter.bigDataType == BigDataType.none) return null;
     // case DualModel
@@ -209,6 +289,7 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
     final meta = (value as DualModel).meta;
     if (meta == null) return null;
     if (meta.smallDataSize == 0) return null;
+    // print('id: ${meta.id}- meta: $meta');
 
     final result = await meta.readBigDataAsString(_indexedDb.readRaf);
     if (_indexedDb.config.useBigDataGzipEncoder) {
@@ -242,6 +323,11 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
       if (meta.adapterTypId != _adapter.adapterTypeId) continue;
       ids.add(meta.id);
     }
+    await _indexedDb.deleteByIdList(ids);
+  }
+
+  @override
+  Future<void> deleteByIdList(List<int> ids) async {
     await _indexedDb.deleteByIdList(ids);
   }
 
