@@ -32,8 +32,23 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
       bigDataSize: 0,
       bigData: Stream.empty(),
     );
-    await _indexedDb.add(record);
-    return id;
+    return await _indexedDb.add(record);
+  }
+
+  @override
+  Future<bool> updateById(int id, T value) async {
+    final smallEncoder = SmallDataEncoder();
+
+    final record = DualRecord(
+      id: id,
+      adapterTypId: _adapter.adapterTypeId,
+      parentId: _adapter.getParentId(value),
+      smallData: _adapter.toSmallData(value, id, smallEncoder),
+      bigDataType: _adapter.bigDataType,
+      bigDataSize: 0,
+      bigData: Stream.empty(),
+    );
+    return await _indexedDb.updateById(id, record);
   }
 
   @override
@@ -93,12 +108,7 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
         'Your Adapter `BigDataType` is `${_adapter.bigDataType.name}`\nYou Should Use -> `$_shouldUseAddBigMethodErrorText`',
       );
     }
-    final bytes = utf8.encode(jsonEncode(bigMap));
-    return await addWithBigData(
-      value,
-      bigDataSize: bytes.length,
-      bigDataStream: Stream.value(bytes),
-    );
+    return await addWithBigDataString(value, bigString: jsonEncode(bigMap));
   }
 
   @override
@@ -208,6 +218,23 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
   }
 
   @override
+  Future<Map<String, dynamic>?> readBigDataAsMap(
+    T value, {
+    void Function(String error)? onError,
+  }) async {
+    try {
+      final str = await readBigDataAsString(value);
+      if (str == null) return null;
+      final map = jsonDecode(str);
+
+      return Map<String, dynamic>.from(map);
+    } catch (e) {
+      onError?.call(e.toString());
+      return null;
+    }
+  }
+
+  @override
   Future<void> deleteAll() async {
     final ids = <int>[];
     for (var meta in _indexedDb.getAll(adapterTypId: _adapter.adapterTypeId)) {
@@ -219,8 +246,8 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
   }
 
   @override
-  Future<void> deleteById(int id) async {
-    await _indexedDb.deleteById(id);
+  Future<bool> deleteById(int id) async {
+    return await _indexedDb.deleteById(id);
   }
 
   String get _shouldUseAddBigMethodErrorText {

@@ -21,7 +21,15 @@ abstract class DualBoxCrud<T> {
   Future<void> deleteAll();
 
   /// Delete By Id
-  Future<void> deleteById(int id);
+  ///
+  /// Return -> if deleted ? true : false
+  Future<bool> deleteById(int id);
+
+  /// Update By Id
+  ///
+  /// Return -> if updated ? true : false
+  ///
+  Future<bool> updateById(int id, T value);
 
   /// Read Big Data From Database
   Future<Stream<List<int>>?> readBigData(T value);
@@ -30,6 +38,14 @@ abstract class DualBoxCrud<T> {
   ///
   /// String အဖြစ် ပြန်ယူမယ်
   Future<String?> readBigDataAsString(T value);
+
+  /// Read Big Data From Database
+  ///
+  /// Return -> As Map
+  Future<Map<String, dynamic>?> readBigDataAsMap(
+    T value, {
+    void Function(String error)? onError,
+  });
 
   /// ### Add Data With BigData
   ///

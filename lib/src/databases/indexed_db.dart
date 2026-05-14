@@ -22,12 +22,8 @@ class IndexedDb {
   int get deletedSize => _deletedSize;
 
   final Map<int, RecordMeta> _allRecords = {};
-  final Map<int, List<RecordMeta>> _parentOfRecords = {};
-  final Map<int, List<RecordMeta>> _adapterOfRecords = {};
   // get
   Map<int, RecordMeta> get allRecords => _allRecords;
-  // Map<int, List<RecordMeta>> get parentOfRecords => _parentOfRecords;
-  // Map<int, List<RecordMeta>> get adapterOfRecords => _adapterOfRecords;
 
   // get
   RandomAccessFile get readRaf => _readRaf;
@@ -65,12 +61,6 @@ class IndexedDb {
       if (meta.flag == RecordFlag.active) {
         // active
         _allRecords[meta.id] = meta;
-        if (meta.parentId != -1) {
-          _parentOfRecords.putIfAbsent(meta.parentId, () => []).add(meta);
-        }
-        if (meta.adapterTypId != -1) {
-          _adapterOfRecords.putIfAbsent(meta.adapterTypId, () => []).add(meta);
-        }
       } else {
         //delete
         _deletedCount++;
@@ -99,7 +89,8 @@ class IndexedDb {
   }
 
   /// Add Record
-  Future<void> add(
+  /// Return ->  `[Added Record.id]`
+  Future<int> add(
     DualRecord record, {
     void Function(double percent)? onProgress,
   }) async {
@@ -107,19 +98,35 @@ class IndexedDb {
     final meta = RecordMeta.fromRecord(record, offset);
 
     _allRecords[record.id] = meta;
-    if (meta.parentId != -1) {
-      _parentOfRecords.putIfAbsent(meta.parentId, () => []).add(meta);
-    }
-    if (meta.adapterTypId != -1) {
-      _adapterOfRecords.putIfAbsent(meta.adapterTypId, () => []).add(meta);
-    }
     await _writeRaf.flush();
+
+    return record.id;
+  }
+
+  /// Add Record
+  Future<bool> updateById(
+    int id,
+    DualRecord record, {
+    void Function(double percent)? onProgress,
+  }) async {
+    if (!await deleteById(id, writeFlush: false)) return false;
+
+    final offset = await record.write(_writeRaf, onProgress: onProgress);
+    final meta = RecordMeta.fromRecord(record, offset);
+
+    _allRecords[record.id] = meta;
+    await _writeRaf.flush();
+    return true;
   }
 
   /// Delete Record
-  Future<void> deleteById(int id) async {
+  Future<bool> deleteById(int id, {bool writeFlush = true}) async {
     final record = _allRecords[id];
-    if (record == null) throw Exception('ID `$id` Not Found!');
+    // if (record == null) throw Exception('ID `$id` Not Found!');
+    if (record == null) {
+      print('ID `$id` Not Found!');
+      return false;
+    }
 
     await record.setDeleteMark(_writeRaf);
     // Remove RAM
@@ -127,9 +134,11 @@ class IndexedDb {
     _deletedSize += record.recordSize;
     _allRecords.remove(id);
 
-    await _writeRaf.flush();
-    _reCalculateAllRecords();
-    await mabyCompact();
+    if (writeFlush) {
+      await _writeRaf.flush();
+      await mabyCompact();
+    }
+    return true;
   }
 
   /// Delete Record by id list
@@ -147,22 +156,7 @@ class IndexedDb {
 
     await _writeRaf.flush();
 
-    _reCalculateAllRecords();
     await mabyCompact();
-  }
-
-  void _reCalculateAllRecords() {
-    _adapterOfRecords.clear();
-    _parentOfRecords.clear();
-
-    for (var meta in _allRecords.values) {
-      if (meta.parentId != -1) {
-        _parentOfRecords.putIfAbsent(meta.parentId, () => []).add(meta);
-      }
-      if (meta.adapterTypId != -1) {
-        _adapterOfRecords.putIfAbsent(meta.adapterTypId, () => []).add(meta);
-      }
-    }
   }
 
   Future<void> close() async {
@@ -225,10 +219,8 @@ class IndexedDb {
   Future<void> _clearCache() async {
     await _writeRaf.close();
     await _readRaf.close();
-    _lastIndex = 0;
     _allRecords.clear();
-    _adapterOfRecords.clear();
-    _parentOfRecords.clear();
+    _lastIndex = 0;
     _deletedCount = 0;
     _deletedSize = 0;
     _isOpened = false;
