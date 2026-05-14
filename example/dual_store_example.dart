@@ -1,8 +1,8 @@
+// ignore_for_file: unused_local_variable
+
 import 'dart:typed_data';
 
 import 'package:dual_store/dual_store.dart';
-import 'package:dual_store/src/interfaces/dual_adapter.dart';
-import 'package:dual_store/src/interfaces/dual_model.dart';
 
 void main() async {
   final db = DualStore();
@@ -48,9 +48,9 @@ class UserAdapter extends DualAdapter<User> {
   @override
   User fromSmallData(SmallDataDecoder decoder) {
     return User(
-      id: decoder.readInt(), //generated auto id
-      name: decoder.readString(),
-      age: decoder.readInt(),
+      id: decoder.getInt(1), //generated auto id
+      name: decoder.getString(2),
+      age: decoder.getInt(3),
     );
   }
 
@@ -60,9 +60,9 @@ class UserAdapter extends DualAdapter<User> {
     int generatedAutoId,
     SmallDataEncoder encoder,
   ) {
-    encoder.writeInt(generatedAutoId); //write auto id
-    encoder.writeString(value.name);
-    encoder.writeInt(value.age);
+    encoder.writeInt(1, generatedAutoId); //write auto id
+    encoder.writeString(2, value.name);
+    encoder.writeInt(3, value.age);
     return encoder.finishedBytes;
   }
 }
@@ -94,7 +94,7 @@ class UserContentAdapter extends DualAdapter<UserContent> {
 
   @override
   UserContent fromSmallData(SmallDataDecoder decoder) {
-    return UserContent(id: decoder.readInt(), userId: decoder.readInt());
+    return UserContent(id: decoder.getInt(1), userId: decoder.getInt(2));
   }
 
   @override
@@ -103,8 +103,8 @@ class UserContentAdapter extends DualAdapter<UserContent> {
     int generatedAutoId,
     SmallDataEncoder encoder,
   ) {
-    encoder.writeInt(generatedAutoId);
-    encoder.writeInt(value.userId);
+    encoder.writeInt(1, generatedAutoId);
+    encoder.writeInt(2, value.userId);
     return encoder.finishedBytes;
   }
 

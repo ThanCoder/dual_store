@@ -11,7 +11,7 @@ class IndexedDb {
   late File dbFile;
   late RandomAccessFile _readRaf;
   late RandomAccessFile _writeRaf;
-  late DualConfig _config;
+  late DualConfig config;
 
   int _lastIndex = 0;
   int _deletedCount = 0;
@@ -43,7 +43,7 @@ class IndexedDb {
   /// set Config
   void setConfig({required File dbFile, required DualConfig config}) {
     this.dbFile = dbFile;
-    _config = config;
+    this.config = config;
   }
 
   /// Load Database
@@ -172,10 +172,10 @@ class IndexedDb {
 
   // ** Compact **
   Future<void> mabyCompact() async {
-    if (!_config.autoCompact && _deletedCount == 0) return;
+    if (!config.autoCompact && _deletedCount == 0) return;
 
-    if (_deletedCount >= _config.willCompactDeletedCount ||
-        _deletedSize >= _config.willCompactDeletedSize) {
+    if (_deletedCount >= config.willCompactDeletedCount ||
+        _deletedSize >= config.willCompactDeletedSize) {
       await compact(); // Trigger the maintenance
     }
   }
@@ -190,7 +190,7 @@ class IndexedDb {
     // await compactRaf.writeFrom(utf8.encode(magic));
     // await compactRaf.writeByte(version);
 
-    final bufferSize = _config.compactBufferSize;
+    final bufferSize = config.compactBufferSize;
     final buffer = Uint8List(bufferSize);
 
     for (var meta in _allRecords.values) {

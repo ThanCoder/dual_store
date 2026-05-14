@@ -114,26 +114,9 @@ class RecordMeta {
 
   /// Read Big Data From Database
   ///
-  /// String အဖြစ် ပြန်ယူမယ်
-  Future<String> readBigDataAsString(
-    RandomAccessFile raf, {
-    int maxRamSize = 50 * 1024 * 1024,
-  }) async {
-    if (bigDataSize > maxRamSize) {
-      throw Exception(
-        "Data is too large ($bigDataSize bytes) to load as a String. Please use readBigData() stream instead.",
-      );
-    }
-    await raf.setPosition(bigDataStartOffset);
-
-    final data = await raf.read(bigDataSize);
-    return utf8.decode(data);
-  }
-
-  /// Read Big Data From Database
+  /// String `Uint8List` အဖြစ် ပြန်ယူမယ်
   ///
-  /// JSON အဖြစ် ပြန်ယူမယ်
-  Future<dynamic> readBigDataAsJson(
+  Future<Uint8List> readBigDataAsString(
     RandomAccessFile raf, {
     int maxRamSize = 50 * 1024 * 1024,
   }) async {
@@ -145,7 +128,7 @@ class RecordMeta {
     await raf.setPosition(bigDataStartOffset);
 
     final data = await raf.read(bigDataSize);
-    return jsonDecode(utf8.decode(data));
+    return data;
   }
 
   /// Read Big Data From Database

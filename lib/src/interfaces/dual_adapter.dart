@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:dual_store/dual_store.dart';
-import 'package:dual_store/src/interfaces/dual_model.dart';
 
 abstract class DualAdapter<T extends DualModel> {
   /// **⚠️ IMPORTANT: FIELD ORDER CONSISTENCY**

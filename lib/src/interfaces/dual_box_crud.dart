@@ -1,4 +1,22 @@
+typedef FindFuncCallback<T> = bool Function(T value);
+
 abstract class DualBoxCrud<T> {
+  /// ### Find One
+  Future<T?> findOne(FindFuncCallback<T> test, {int? parentId});
+
+  /// ### Find One Stream
+  Stream<T?> findOneStream(FindFuncCallback<T> test, {int? parentId});
+
+  ///
+  /// ### Get All `List<T>`
+  ///
+  Future<List<T>> getAll({int? parentId});
+
+  ///
+  /// ### Get All `List<T>`
+  ///
+  Stream<T> getAllStream({int? parentId});
+
   /// Delete All Record By AdapterTypeId
   Future<void> deleteAll();
 
@@ -13,12 +31,9 @@ abstract class DualBoxCrud<T> {
   /// String အဖြစ် ပြန်ယူမယ်
   Future<String?> readBigDataAsString(T value);
 
-  /// Read Big Data From Database
+  /// ### Add Data With BigData
   ///
-  /// JSON အဖြစ် ပြန်ယူမယ်
-  Future<dynamic> readBigDataAsJson(T value);
-
-  /// ### Add Data
+  /// Return -> `[generated id]`
   ///
   /// [bigDataStream] Custom Data
   ///
@@ -33,45 +48,49 @@ abstract class DualBoxCrud<T> {
   ///```
   /// For Safe Method.
   ///
-  Future<void> add(
+
+  Future<int> addWithBigData(
     T value, {
     Stream<List<int>>? bigDataStream,
     int? bigDataSize,
     void Function(double progerss)? onProgress,
   });
 
+  ///
+  /// ### Add Small Data Without BigStream Data
+  ///
+  /// Return -> `[generated id]`
+  ///
+  Future<int> add(T value);
+
   /// ### Add Data With Big Data Map
+  ///
+  /// Return -> `[generated id]`
   ///
   /// [bigMap] Custom Data
   ///
-  Future<void> addWithBigDataMap(
+  Future<int> addWithBigDataMap(
     T value, {
     required Map<String, dynamic> bigMap,
-    void Function(double progerss)? onProgress,
   });
 
   /// ### Add Data With Big String
   ///
+  /// Return -> `[generated id]`
+  ///
   /// [bigString] Custom Data
   ///
-  Future<void> addWithBigDataString(
-    T value, {
-    required String bigString,
-    void Function(double progerss)? onProgress,
-  });
+  Future<int> addWithBigDataString(T value, {required String bigString});
 
   /// ### Add Data With File
   ///
+  /// Return -> `[generated id]`
+  ///
   /// [filePath] Custom Data
   ///
-  Future<void> addWithBigDataFile(
+  Future<int> addWithBigDataFile(
     T value, {
     required String filePath,
     void Function(double progerss)? onProgress,
   });
-
-  ///
-  /// ### Get All `List<T>`
-  ///
-  Future<List<T>> getAll({int? parentId});
 }

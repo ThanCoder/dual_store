@@ -27,7 +27,15 @@ class DualConfig {
   ///
   final bool saveLastCompactOldDBBackupFile;
 
+  ///
+  /// Big Data Compresser in `BigDataType.stringText`
+  ///
+  /// !Not Working -> `BigDataType.file`
+  ///
+  final bool useBigDataGzipEncoder;
+
   const DualConfig({
+    this.useBigDataGzipEncoder = true,
     this.useRamSmallData = true,
     this.autoCompact = true,
     this.willCompactDeletedCount = 1000,

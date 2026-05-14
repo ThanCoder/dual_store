@@ -1,44 +1,81 @@
 import 'dart:typed_data';
 import 'dart:convert';
 
+import 'package:dual_store/dual_store.dart';
+
 /// Dual Small Data Decoder
 class SmallDataDecoder {
   final Uint8List _data;
-  int _cursor = 0; // လက်ရှိ ဖတ်နေတဲ့ နေရာကို မှတ်ထားတာ
-  /// Dual Small Data Decoder
-  SmallDataDecoder(this._data);
+  int _offset = 0;
+  final Map<int, dynamic> _decodedData = {};
+  final void Function(String error)? onError;
 
-  // ၁။ Integer ပြန်ဖတ်မယ်
-  int readInt() {
-    // လက်ရှိ cursor နေရာကနေ 4 bytes ကို ယူမယ်
-    var view = ByteData.view(_data.buffer, _data.offsetInBytes + _cursor, 4);
-    _cursor += 4; // 4 bytes ဖတ်ပြီးသွားလို့ ရှေ့ကို ၄ နေရာ တိုးလိုက်တယ်
-    return view.getInt32(0);
+  Map<int, dynamic> get decodedData => _decodedData;
+
+  /// Decord All
+  SmallDataDecoder(this._data, {this.onError}) {
+    _decodeAll(onError);
   }
 
-  // ၂။ String ပြန်ဖတ်မယ်
-  String readString() {
-    // အရင်ဆုံး String ရဲ့ အရှည် (Length) ကို ဖတ်မယ် (အပေါ်က readInt ကို ပြန်သုံးတာ)
-    int length = readInt();
+  void _decodeAll(void Function(String error)? onError) {
+    final buffer = _data.buffer.asByteData();
 
-    // ရလာတဲ့ length အတိုင်း bytes တွေကို ဖြတ်ထုတ်မယ်
-    var stringBytes = _data.sublist(_cursor, _cursor + length);
-    _cursor += length; // စာသားအရှည်အတိုင်း cursor ကို ရှေ့တိုးမယ်
+    try {
+      while (_offset < _data.length) {
+        // key
+        final key = _data[_offset]; //read 1 byte
+        _offset += 1;
+        //type
+        final type = _data[_offset]; //read 1 byte
+        _offset += 1;
+        if (type == SmallDataEncoder.typeInt) {
+          final val = buffer.getInt64(_offset, Endian.little);
+          _offset += 8;
+          // print('int: key: $key - val: $val');
+          _decodedData[key] = val;
+        } else if (type == SmallDataEncoder.typeBool) {
+          final val = buffer.getInt8(_offset) == 1 ? true : false;
+          _offset += 1;
+          // print('bool: key: $key - val: $val');
+          _decodedData[key] = val;
+        } else if (type == SmallDataEncoder.typeDouble) {
+          final val = buffer.getFloat64(_offset, Endian.little);
+          // print('double: key: $key - val: $val');
+          _decodedData[key] = val;
+          _offset += 8;
+        } else if (type == SmallDataEncoder.typeString) {
+          final strLength = buffer.getInt32(_offset, Endian.little);
+          _offset += 4;
 
-    return utf8.decode(stringBytes);
+          final strBytes = _data.sublist(_offset, _offset + strLength);
+          final val = utf8.decode(strBytes);
+          // print('String: key: $key - val: $val');
+          _decodedData[key] = val;
+          _offset += strLength;
+        }
+      }
+    } catch (e) {
+      onError?.call(e.toString());
+    }
   }
 
-  // ၃။ Double ပြန်ဖတ်မယ်
-  double readDouble() {
-    var view = ByteData.view(_data.buffer, _data.offsetInBytes + _cursor, 8);
-    _cursor += 8; // Double က 8 bytes ရှိတယ်
-    return view.getFloat64(0);
+  int getInt(int key, [int defVal = 0]) {
+    final val = _decodedData[key];
+    return (val is int) ? val : defVal;
   }
 
-  // ၄။ Boolean ပြန်ဖတ်မယ်
-  bool readBool() {
-    int value = _data[_cursor];
-    _cursor += 1; // Boolean က 1 byte ပဲ ရှိတယ်
-    return value == 1;
+  double getDouble(int key, [double defVal = 0.0]) {
+    final val = _decodedData[key];
+    return (val is double) ? val : defVal;
+  }
+
+  bool getBool(int key, [bool defVal = false]) {
+    final val = _decodedData[key];
+    return (val is bool) ? val : defVal;
+  }
+
+  String getString(int key, [String defVal = '']) {
+    final val = _decodedData[key];
+    return (val is String) ? val : defVal;
   }
 }

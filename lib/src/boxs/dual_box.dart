@@ -19,7 +19,25 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
       _indexedDb = indexedDb;
 
   @override
-  Future<void> add(
+  Future<int> add(T value) async {
+    final id = _indexedDb.generatedIndex;
+    final smallEncoder = SmallDataEncoder();
+
+    final record = DualRecord(
+      id: id,
+      adapterTypId: _adapter.adapterTypeId,
+      parentId: _adapter.getParentId(value),
+      smallData: _adapter.toSmallData(value, id, smallEncoder),
+      bigDataType: _adapter.bigDataType,
+      bigDataSize: 0,
+      bigData: Stream.empty(),
+    );
+    await _indexedDb.add(record);
+    return id;
+  }
+
+  @override
+  Future<int> addWithBigData(
     T value, {
     Stream<List<int>>? bigDataStream,
     int? bigDataSize,
@@ -38,50 +56,53 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
       bigDataSize: bigDataSize ?? 0,
     );
     await _indexedDb.add(record, onProgress: onProgress);
+    return id;
   }
 
   @override
-  Future<void> addWithBigDataString(
+  Future<int> addWithBigDataString(T value, {required String bigString}) async {
+    if (_adapter.bigDataType != BigDataType.stringText) {
+      throw Exception(
+        'Your Adapter `BigDataType` is `${_adapter.bigDataType.name}`\nYou Should Use -> `$_shouldUseAddBigMethodErrorText`',
+      );
+    }
+    if (_indexedDb.config.useBigDataGzipEncoder) {
+      final bytes = gzip.encode(utf8.encode(bigString));
+      return await addWithBigData(
+        value,
+        bigDataSize: bytes.length,
+        bigDataStream: Stream.value(bytes),
+      );
+    } else {
+      final bytes = utf8.encode(bigString);
+      return await addWithBigData(
+        value,
+        bigDataSize: bytes.length,
+        bigDataStream: Stream.value(bytes),
+      );
+    }
+  }
+
+  @override
+  Future<int> addWithBigDataMap(
     T value, {
-    required String bigString,
-    void Function(double progerss)? onProgress,
+    required Map<String, dynamic> bigMap,
   }) async {
     if (_adapter.bigDataType != BigDataType.stringText) {
       throw Exception(
         'Your Adapter `BigDataType` is `${_adapter.bigDataType.name}`\nYou Should Use -> `$_shouldUseAddBigMethodErrorText`',
       );
     }
-    final bytes = utf8.encode(bigString);
-    await add(
-      value,
-      bigDataSize: bytes.length,
-      bigDataStream: Stream.value(bytes),
-      onProgress: onProgress,
-    );
-  }
-
-  @override
-  Future<void> addWithBigDataMap(
-    T value, {
-    required Map<String, dynamic> bigMap,
-    void Function(double progerss)? onProgress,
-  }) async {
-    if (_adapter.bigDataType != BigDataType.json) {
-      throw Exception(
-        'Your Adapter `BigDataType` is `${_adapter.bigDataType.name}`\nYou Should Use -> `$_shouldUseAddBigMethodErrorText`',
-      );
-    }
     final bytes = utf8.encode(jsonEncode(bigMap));
-    await add(
+    return await addWithBigData(
       value,
       bigDataSize: bytes.length,
       bigDataStream: Stream.value(bytes),
-      onProgress: onProgress,
     );
   }
 
   @override
-  Future<void> addWithBigDataFile(
+  Future<int> addWithBigDataFile(
     T value, {
     required String filePath,
     void Function(double progerss)? onProgress,
@@ -95,7 +116,7 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
     if (!file.existsSync()) {
       throw Exception('File Path: `$filePath`  Not Found!');
     }
-    await add(
+    return await addWithBigData(
       value,
       bigDataSize: await file.length(),
       bigDataStream: file.openRead(),
@@ -123,6 +144,42 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
   }
 
   @override
+  Future<T?> findOne(FindFuncCallback<T> test, {int? parentId}) async {
+    for (var val in await getAll(parentId: parentId)) {
+      if (test(val)) return val;
+    }
+    return null;
+  }
+
+  @override
+  Stream<T?> findOneStream(FindFuncCallback<T> test, {int? parentId}) async* {
+    await for (var val in getAllStream(parentId: parentId)) {
+      if (test(val)) {
+        yield val;
+        return;
+      }
+    }
+    yield null;
+  }
+
+  @override
+  Stream<T> getAllStream({int? parentId}) async* {
+    for (var meta in _indexedDb.getAll(
+      parentId: parentId,
+      adapterTypId: _adapter.adapterTypeId,
+    )) {
+      final smallDataBytes = await meta.readSmallData(_indexedDb.readRaf);
+      final smallData =
+          _adapter.fromSmallData(SmallDataDecoder(smallDataBytes)) as DualModel;
+      // set meta
+      smallData.autoId = meta.id;
+      smallData.meta = meta;
+      yield (smallData as T);
+      // print(meta);
+    }
+  }
+
+  @override
   Future<Stream<List<int>>?> readBigData(T value) async {
     if (_adapter.bigDataType == BigDataType.none) return null;
     // case DualModel
@@ -142,20 +199,12 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
     final meta = (value as DualModel).meta;
     if (meta == null) return null;
     if (meta.smallDataSize == 0) return null;
-    return await meta.readBigDataAsString(_indexedDb.readRaf);
-  }
 
-  @override
-  Future<dynamic> readBigDataAsJson(T value) async {
-    if (_adapter.bigDataType == BigDataType.none &&
-        _adapter.bigDataType != BigDataType.json) {
-      return null;
+    final result = await meta.readBigDataAsString(_indexedDb.readRaf);
+    if (_indexedDb.config.useBigDataGzipEncoder) {
+      return utf8.decode(gzip.decode(result));
     }
-    // case DualModel
-    final meta = (value as DualModel).meta;
-    if (meta == null) return null;
-    if (meta.smallDataSize == 0) return null;
-    return await meta.readBigDataAsJson(_indexedDb.readRaf);
+    return utf8.decode(result);
   }
 
   @override
@@ -177,9 +226,14 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
   String get _shouldUseAddBigMethodErrorText {
     return switch (_adapter.bigDataType) {
       BigDataType.file => 'addWithBigDataFile',
-      BigDataType.json => 'addWithBigDataMap',
-      BigDataType.stringText => 'addWithBigDataString',
-      _ => '',
+      BigDataType.stringText => 'addWithBigDataString,addWithBigDataMap',
+      BigDataType.none =>
+        '''  
+  in -> extends DualAdapter<$T>
+  
+  @override
+  // TODO: implement bigDataType
+  BigDataType get bigDataType => super.bigDataType;\n''',
     };
   }
 }
