@@ -21,17 +21,31 @@ class DualStore {
 
   /// Register Adapter Not Exists
   void registerAdapterNotExists<T extends DualModel>(DualAdapter<T> adapter) {
-    final ids = _adapters.values.map((e) => e.adapterTypeId).toSet();
-    if (ids.contains(adapter.adapterTypeId)) {
+    final existingAdapter = _adapters[T];
+
+    // ၁။ Type တူနေသလား အရင်စစ်မယ်
+    if (existingAdapter != null) {
+      // Type လည်းတူ၊ ID လည်းတူနေရင် ဘာမှမလုပ်ဘဲ return ပြန်မယ်
+      if (existingAdapter.adapterTypeId == adapter.adapterTypeId) {
+        // print('ရှိနှင့်ပြီးသားဖြစ်၍ ကျော်သွားပါမည်');
+        return;
+      }
+    }
+
+    // ၂။ Type မတူပေမယ့် ID တူနေတာ ရှိမရှိ စစ်မယ် (ID duplication check)
+    final allIds = _adapters.values.map((e) => e.adapterTypeId).toSet();
+    if (allIds.contains(adapter.adapterTypeId)) {
       throw Exception(
-        """ Duplicate Adapter: `${adapter.runtimeType}` Unique id detected: `${adapter.adapterTypeId}`\n--- Please Changed ---
-        @override
-        int get adapterTypeId => `${adapter.adapterTypeId}`; <<<-----
+        """Duplicate Adapter ID: Unique id `${adapter.adapterTypeId}` is already used by another type.
+        Please change the adapterTypeId for `${adapter.runtimeType}`.
         """,
       );
     }
+
+    // ၃။ အပေါ်က အခြေအနေတွေ မရှိရင် Register လုပ်မယ်
     _adapters[T] = adapter;
     _boxs[T] = DualBox<T>(adapter, _indexedDb);
+    // print('${T.toString()} ကို register လုပ်ပြီးပါပြီ');
   }
 
   ///

@@ -9,6 +9,9 @@ void main() async {
   db.registerAdapterNotExists<User>(UserAdapter());
   db.registerAdapterNotExists<UserContent>(UserContentAdapter());
 
+  db.registerAdapterNotExists<User>(UserAdapter());
+  db.registerAdapterNotExists<UserContent>(UserContentAdapter());
+
   await db.open('dual.db');
 
   final box = db.getBox<User>();
