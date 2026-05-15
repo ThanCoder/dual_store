@@ -1,6 +1,9 @@
 typedef FindFuncCallback<T> = bool Function(T value);
 
 abstract class DualBoxCrud<T> {
+  /// All Record Count
+  int getAllCount({int? parentId});
+
   /// ### Get One
   Future<T?> getOne(FindFuncCallback<T> test, {int? parentId});
 

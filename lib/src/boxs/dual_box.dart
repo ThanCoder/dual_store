@@ -19,6 +19,14 @@ class DualBox<T extends DualModel> extends DualBoxCrud<T> {
       _indexedDb = indexedDb;
 
   @override
+  int getAllCount({int? parentId}) {
+    return _indexedDb.getAllCount(
+      parentId: parentId,
+      adapterTypId: _adapter.adapterTypeId,
+    );
+  }
+
+  @override
   Future<int> add(T value) async {
     final id = _indexedDb.generatedIndex;
     final smallEncoder = SmallDataEncoder();

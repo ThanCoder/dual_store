@@ -86,6 +86,21 @@ class IndexedDb {
     });
   }
 
+  /// get all records of meta
+  int getAllCount({int? parentId, int? adapterTypId}) {
+    // logic ကို functional approach နဲ့ ရေးတာ ပိုရှင်းပါတယ်
+    return _allRecords.values.where((meta) {
+      // parentId ပေးထားရင် ကိုက်ညီရမယ်
+      final matchParent = parentId == null || meta.parentId == parentId;
+
+      // adapterTypId ပေးထားရင် ကိုက်ညီရမယ်
+      final matchAdapter =
+          adapterTypId == null || meta.adapterTypId == adapterTypId;
+
+      return matchParent && matchAdapter;
+    }).length;
+  }
+
   /// Add Record
   /// Return ->  `[Added Record.id]`
   Future<int> add(

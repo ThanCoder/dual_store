@@ -90,6 +90,16 @@ class DualStore {
   int get deletedCount => _indexedDb.deletedCount;
   int get deletedSize => _indexedDb.deletedSize;
 
+  int get allCount => _indexedDb.allRecords.length;
+
+  /// Get All Record Count
+  int getAllCount({int? parentId, int? adapterTypId}) {
+    return _indexedDb.getAllCount(
+      parentId: parentId,
+      adapterTypId: adapterTypId,
+    );
+  }
+
   /// close database
   Future<void> close() async {
     await _indexedDb.close();
