@@ -49,10 +49,10 @@ class RecordMeta {
   }
 
   ///(header size(33 bytes)) => [flag(1),id(8),adapterTypeId(4),parentId(8),smallDataSize(4),bigDataSize(8)]
-  static Future<RecordMeta> read(RandomAccessFile raf) async {
-    final offset = await raf.position();
+  static RecordMeta read(RandomAccessFile raf) {
+    final offset = raf.positionSync();
 
-    final data = await raf.read(DualRecord.headerSize);
+    final data = raf.readSync(DualRecord.headerSize);
     if (data.length != DualRecord.headerSize) {
       throw Exception('Wrong Header or EOF');
     }
@@ -64,10 +64,10 @@ class RecordMeta {
     final smallDataSize = header.getInt32(smallDataSizePos, Endian.little);
     final bigDataSize = header.getInt64(bigDataSizePos, Endian.little);
 
-    final smallData = await raf.read(smallDataSize);
+    final smallData = raf.readSync(smallDataSize);
     // skip big data
     if (bigDataSize > 0) {
-      await raf.setPosition(
+      raf.setPositionSync(
         offset + DualRecord.headerSize + smallDataSize + bigDataSize,
       );
     }

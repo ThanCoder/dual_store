@@ -45,19 +45,19 @@ class IndexedDb {
   /// Load Database
   Future<void> load() async {
     if (isOpened) return;
-    _writeRaf = await dbFile.open(mode: FileMode.append);
-    _readRaf = await dbFile.open(mode: FileMode.read);
-    await _loadIndexed();
+    _writeRaf = dbFile.openSync(mode: FileMode.append);
+    _readRaf = dbFile.openSync(mode: FileMode.read);
+    _loadIndexed();
     _isOpened = true;
   }
 
   /// Load Indexed
-  Future<void> _loadIndexed() async {
+  void _loadIndexed() {
     if (!dbFile.existsSync()) return;
-    final size = await dbFile.length();
-    await _readRaf.setPosition(0);
-    while (await _readRaf.position() < size) {
-      final meta = await RecordMeta.read(_readRaf);
+    final size = dbFile.lengthSync();
+    _readRaf.setPositionSync(0);
+    while (_readRaf.positionSync() < size) {
+      final meta = RecordMeta.read(_readRaf);
       if (meta.flag == RecordFlag.active) {
         // active
         _allRecords[meta.id] = meta;
