@@ -1,42 +1,62 @@
-enum RecordFlag {
+enum DuFlag {
   deleted(0),
   active(1);
 
   final int value;
-  const RecordFlag(this.value);
+  const DuFlag(this.value);
 
-  static RecordFlag fromValue(int val) {
+  static DuFlag fromValue(int val) {
     return values.firstWhere((e) => e.value == val, orElse: () => deleted);
   }
 }
 
-enum MetaType {
+enum RecordType {
+  meta(0),
+  content(1);
+
+  final int value;
+  const RecordType(this.value);
+
+  static RecordType fromValue(int val) {
+    return values.firstWhere((e) => e.value == val, orElse: () => meta);
+  }
+}
+
+enum DuMetaType {
   unknown(-1),
   json(1);
 
   final int value;
-  const MetaType(this.value);
+  const DuMetaType(this.value);
 
-  static MetaType fromValue(int val) {
-    return MetaType.values.firstWhere(
-      (e) => e.value == val,
-      orElse: () => unknown,
-    );
+  static DuMetaType fromValue(int val) {
+    return values.firstWhere((e) => e.value == val, orElse: () => unknown);
   }
 }
 
-enum DataType {
+enum DuContentDataType {
   none(0),
-  utf8(1),
-  binary(2);
+  text(1),
+  bytes(2),
+  file(3),
+  stream(4);
 
   final int value;
-  const DataType(this.value);
+  const DuContentDataType(this.value);
 
-  static DataType fromValue(int val) {
-    return DataType.values.firstWhere(
-      (e) => e.value == val,
-      orElse: () => none,
-    );
+  static DuContentDataType fromValue(int val) {
+    return values.firstWhere((e) => e.value == val, orElse: () => none);
+  }
+}
+
+enum DuContentFlag {
+  none(0),
+  compressed(1);
+
+  final int value;
+  const DuContentFlag(this.value);
+
+  static DuContentFlag fromValue(int val) {
+    return values.firstWhere((e) => e.value == val, orElse: () => none);
   }
 }

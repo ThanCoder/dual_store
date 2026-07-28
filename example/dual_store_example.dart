@@ -21,7 +21,7 @@ void main() async {
 
   final box = du.getBox<User>();
 
-  // await box.add(User(title: 'i am user one'));
+  await box.add(User(title: 'i am user one'));
   // await box.add(User(title: 'i am user two'));
   // await box.add(User(title: 'i am user three'));
 

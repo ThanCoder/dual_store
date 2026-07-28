@@ -48,7 +48,7 @@ class DuStore extends IDuStore with AdapterHandler, BoxHandler, EngineHandler {
   Future<Uint8List?> getContentById(int id) async {
     final meta = _metaInfo.allMeta[id];
     if (meta == null || meta.dataSize == 0) return null;
-    return _engine.getDataFromMeta(meta);
+    return await _engine.getDataFromMeta(meta);
   }
 
   @override

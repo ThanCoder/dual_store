@@ -1,13 +1,12 @@
 import 'dart:typed_data';
 
-import 'package:dual_store/src/core/models/du_record.dart';
+import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/engine/i_engine_logic.dart';
-import 'package:dual_store/src/core/models/meta.dart';
 
-/// [ all bytes(32)
+/// [ all bytes(24)
 ///
 ///### Fixed Header
-/// flag(1),id(8),parentId(8),adapterTypeId(1),
+/// flag(1),recordType(1),id(8),parentId(8),adapterTypeId(1),
 /// mataType(1),metaSize(4)
 /// dataType(1),dataSize(8),
 ///
@@ -16,17 +15,29 @@ import 'package:dual_store/src/core/models/meta.dart';
 /// metaData(n bytes),
 /// data(n bytes)
 /// ]
-mixin RecordWriter on IEngineLogic {
-  Meta writeRecord(DuRecord rec) {
+mixin MetaWriter on IEngineLogic {
+  /// ### Delete Mark
+  bool deleteMarkMeta(Meta meta) {
+    final lastPos = writeRaf.positionSync();
+    // go meta pos
+    writeRaf.setPositionSync(meta.headerOffset);
+    writeRaf.writeByteSync(DuFlag.deleted.value);
+
+    writeRaf.setPositionSync(lastPos);
+    return true;
+  }
+
+  Future<Meta> writeMeta(DuMetaRecord rec) async {
     assert(rec.metaData.length == rec.metaSize);
-    assert(rec.data.length == rec.dataSize);
 
     final headerOffset = writeRaf.lengthSync();
 
-    final data = ByteData(duRecordHeaderLength);
+    final data = ByteData(duMetaHeaderLength);
     int offset = 0;
 
-    data.setUint8(offset, rec.flag.value);
+    data.setUint8(offset, DuFlag.active.value);
+    offset += 1;
+    data.setUint8(offset, RecordType.meta.value);
     offset += 1;
     data.setUint64(offset, rec.id, Endian.little);
     offset += 8;
@@ -38,31 +49,20 @@ mixin RecordWriter on IEngineLogic {
     offset += 1;
     data.setUint32(offset, rec.metaSize, Endian.little);
     offset += 4;
-    data.setInt8(offset, rec.dataType.value);
-    offset += 1;
-    data.setUint64(offset, rec.dataSize, Endian.little);
-    offset += 8;
 
     writeRaf.writeFromSync(data.buffer.asUint8List());
     writeRaf.writeFromSync(rec.metaData);
-    writeRaf.writeFromSync(rec.data);
-
-    // end pos
-    final dataStartOffset = headerOffset + duRecordHeaderLength + rec.metaSize;
 
     return Meta(
-      flag: rec.flag,
+      flag: DuFlag.active,
       id: rec.id,
       parentId: rec.parentId,
       adapterTypeId: rec.adapterTypeId,
       metaType: rec.metaType,
       metaSize: rec.metaSize,
-      dataType: rec.dataType,
-      dataSize: rec.dataSize,
       metaData: rec.metaData,
       headerOffset: headerOffset,
-      dataStartOffset: dataStartOffset,
-      totalSize: duRecordHeaderLength + rec.metaSize + rec.dataSize,
+      totalSize: duMetaHeaderLength + rec.metaSize,
     );
   }
 }

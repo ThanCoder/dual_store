@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:dual_store/src/interfaces/types.dart';
 import 'package:dual_store/src/store/adapter/i_du_model.dart';
 
-abstract class IDuAdapter<T extends IDuModel> {
+abstract class IDuMetaAdapter<T extends IDuModel> {
   /// ### Record Query Id
   ///
   /// You Can use filter
@@ -14,7 +14,7 @@ abstract class IDuAdapter<T extends IDuModel> {
   ///
   /// I Will Used Ram Memory.
   ///
-  MetaType get metaType => .json;
+  DuMetaType get metaType => .json;
 
   /// ### Adapter Type
   ///
@@ -26,10 +26,6 @@ abstract class IDuAdapter<T extends IDuModel> {
 
   Map<String, dynamic> toMeta(T value);
   T fromStorage(Map<String, dynamic> meta);
-
-  /// ### Content Data Type
-  DataType get contentDataType => .none;
-  Uint8List? toContent(T value) => null;
 
   /// Meta
   Uint8List encodeMeta(Map<String, dynamic> meta) {

@@ -1,43 +1,57 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:typed_data';
 
+import 'package:dual_store/src/interfaces/du_content.dart';
 import 'package:dual_store/src/interfaces/types.dart';
 
-const int duRecordHeaderLength = 32;
+const int duMetaHeaderLength = 24;
+const int duContentHeaderLength = 28;
 
-/// [ all bytes(32)
+/// [ all bytes(24)
 ///
 ///### Fixed Header
-/// flag(1),id(8),parentId(8),adapterTypeId(1),
-/// mataType(1),metaSize(4)
-/// dataType(1),dataSize(8),
+/// flag(1),recordType(1),id(8),parentId(8),adapterTypeId(1),
+/// mataType(1),metaSize(4),
 ///
 /// ### N Bytes
 ///
 /// metaData(n bytes),
 /// data(n bytes)
 /// ]
-class DuRecord {
-  final RecordFlag flag;
+class DuMetaRecord {
   final int id;
   final int parentId;
   final int adapterTypeId;
-  final MetaType metaType;
-  final DataType dataType;
+  final DuMetaType metaType;
   final int metaSize;
   final Uint8List metaData;
-  final int dataSize;
-  final Uint8List data;
-  const DuRecord({
-    this.flag = RecordFlag.active,
+  const DuMetaRecord({
     required this.id,
-    this.parentId = -1,
-    this.adapterTypeId = -1,
-    this.metaType = MetaType.json,
-    this.dataType = DataType.none,
+    required this.parentId,
+    required this.adapterTypeId,
+    required this.metaType,
     required this.metaSize,
     required this.metaData,
-    required this.dataSize,
-    required this.data,
+  });
+}
+
+/// ### Content Fixed Header
+///
+///  meta all bytes(28)
+///
+/// flag(1),recordType(1),id(8),metaId(8),contentFlags(1)
+/// contentType(1),contentSize(8),
+/// contentData(n bytes)
+///
+class DuContentRecord {
+  final int id;
+  final int metaId;
+  final DuContentFlag contentFlags;
+  final DuContent duContent;
+  const DuContentRecord({
+    required this.id,
+    required this.metaId,
+    required this.contentFlags,
+    required this.duContent,
   });
 }
