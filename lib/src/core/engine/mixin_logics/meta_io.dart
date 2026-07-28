@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:dual_store/src/core/du_record.dart';
+import 'package:dual_store/src/core/models/du_record.dart';
 import 'package:dual_store/src/core/engine/i_engine_logic.dart';
 import 'package:dual_store/src/core/engine/mixin_logics/engine_header.dart';
 import 'package:dual_store/src/core/models/meta.dart';
@@ -32,7 +32,16 @@ mixin MetaIo on IEngineLogic {
   }
 
   /// ### Read Data From Meta
-  Uint8List getDataFromMeta(Meta meta) {
+  Future<Uint8List> getDataFromMeta(Meta meta) async {
+    await readRaf.setPosition(meta.dataStartOffset);
+    final data = await readRaf.read(meta.dataSize);
+    assert(data.length == meta.dataSize);
+
+    return data;
+  }
+
+  /// ### Read Data From Meta
+  Uint8List getDataFromMetaSync(Meta meta) {
     readRaf.setPositionSync(meta.dataStartOffset);
     final data = readRaf.readSync(meta.dataSize);
     assert(data.length == meta.dataSize);

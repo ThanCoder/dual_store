@@ -12,9 +12,7 @@ enum RecordFlag {
 
 enum MetaType {
   unknown(-1),
-  text(1),
-  json(2),
-  image(3);
+  json(1);
 
   final int value;
   const MetaType(this.value);
@@ -28,9 +26,9 @@ enum MetaType {
 }
 
 enum DataType {
-  unknown(-1),
-  text(1),
-  image(2);
+  none(0),
+  utf8(1),
+  binary(2);
 
   final int value;
   const DataType(this.value);
@@ -38,7 +36,7 @@ enum DataType {
   static DataType fromValue(int val) {
     return DataType.values.firstWhere(
       (e) => e.value == val,
-      orElse: () => unknown,
+      orElse: () => none,
     );
   }
 }

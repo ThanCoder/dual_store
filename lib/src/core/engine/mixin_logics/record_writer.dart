@@ -1,7 +1,8 @@
 import 'dart:typed_data';
 
-import 'package:dual_store/src/core/du_record.dart';
+import 'package:dual_store/src/core/models/du_record.dart';
 import 'package:dual_store/src/core/engine/i_engine_logic.dart';
+import 'package:dual_store/src/core/models/meta.dart';
 
 /// [ all bytes(32)
 ///
@@ -16,8 +17,11 @@ import 'package:dual_store/src/core/engine/i_engine_logic.dart';
 /// data(n bytes)
 /// ]
 mixin RecordWriter on IEngineLogic {
-  void writeRecord(DuRecord rec) {
-    // final headerOffset = writeRaf.lengthSync();
+  Meta writeRecord(DuRecord rec) {
+    assert(rec.metaData.length == rec.metaSize);
+    assert(rec.data.length == rec.dataSize);
+
+    final headerOffset = writeRaf.lengthSync();
 
     final data = ByteData(duRecordHeaderLength);
     int offset = 0;
@@ -39,12 +43,26 @@ mixin RecordWriter on IEngineLogic {
     data.setUint64(offset, rec.dataSize, Endian.little);
     offset += 8;
 
-    final b = BytesBuilder(copy: false);
-    b.add(data.buffer.asUint8List());
-    // add data
-    b.add(rec.metaData);
-    b.add(rec.data);
+    writeRaf.writeFromSync(data.buffer.asUint8List());
+    writeRaf.writeFromSync(rec.metaData);
+    writeRaf.writeFromSync(rec.data);
 
-    writeRaf.writeFromSync(b.takeBytes());
+    // end pos
+    final dataStartOffset = headerOffset + duRecordHeaderLength + rec.metaSize;
+
+    return Meta(
+      flag: rec.flag,
+      id: rec.id,
+      parentId: rec.parentId,
+      adapterTypeId: rec.adapterTypeId,
+      metaType: rec.metaType,
+      metaSize: rec.metaSize,
+      dataType: rec.dataType,
+      dataSize: rec.dataSize,
+      metaData: rec.metaData,
+      headerOffset: headerOffset,
+      dataStartOffset: dataStartOffset,
+      totalSize: duRecordHeaderLength + rec.metaSize + rec.dataSize,
+    );
   }
 }

@@ -1,40 +1,79 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: unused_import, unused_local_variable
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:dual_store/dual_store.dart';
-import 'package:dual_store/src/core/du_record.dart';
 import 'package:dual_store/src/core/engine/dual_engine.dart';
+import 'package:dual_store/src/core/models/du_record.dart';
+import 'package:dual_store/src/interfaces/types.dart';
+import 'package:dual_store/src/store/adapter/i_du_adapter.dart';
+import 'package:dual_store/src/store/adapter/i_du_model.dart';
+import 'package:dual_store/src/store/du_store.dart';
 
 void main() async {
-  final du = DualEngine();
-  du.open('store.du');
+  final du = DuStore();
 
-  // print(du.readHeader());
+  await du.open('store.du');
 
-  // final meta = utf8.encode('i am meta 1');
-  // final data = utf8.encode('i am content 1');
+  du.registerAdapterNotExists(UserAdapter());
+  du.registerAdapterNotExists(UserAdapter());
 
-  // du.writeRecord(
-  //   DuRecord(
-  //     id: 1,
-  //     metaSize: meta.length,
-  //     dataSize: data.length,
-  //     metaData: meta,
-  //     data: data,
-  //   ),
-  // );
-  // du.flush();
+  final box = du.getBox<User>();
 
-  // du.deleteMark(du.getMetaInfo().allMeta[1]!);
+  // await box.add(User(title: 'i am user one'));
+  // await box.add(User(title: 'i am user two'));
+  // await box.add(User(title: 'i am user three'));
 
-  print('before: ${du.getMetaInfo()}');
+  print(await box.getAll());
 
-  // du.compact(du.getHeader(), du.getMetaInfo().allMeta);
+  await du.close();
+}
 
-  print('after: ${du.getMetaInfo()}');
+class UserAdapter extends IDuAdapter<User> {
+  @override
+  int get adapterTypeId => 1;
 
-  // du.deleteMark(info.allMeta[1]!);
+  @override
+  DataType get contentDataType => .none;
 
-  du.close();
+  @override
+  int getId(User value) {
+    return value.generatedId;
+  }
+
+  @override
+  Uint8List? toContent(User value) {
+    return null;
+  }
+
+  @override
+  Map<String, dynamic> toMeta(User value) {
+    return value.toMap();
+  }
+
+  @override
+  User fromStorage(Map<String, dynamic> meta) {
+    return User.fromMap(meta);
+  }
+}
+
+class User extends IDuModel {
+  @override
+  late int generatedId;
+  final String title;
+  User({required this.title});
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{'title': title};
+  }
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(title: map['title'] as String);
+  }
+
+  @override
+  String toString() => 'Generated Id:$generatedId -  User(title: $title)';
 }
