@@ -4,6 +4,7 @@ import 'package:dual_store/src/core/du_record.dart';
 import 'package:dual_store/src/core/engine/i_engine_logic.dart';
 import 'package:dual_store/src/core/engine/mixin_logics/engine_header.dart';
 import 'package:dual_store/src/core/models/meta.dart';
+import 'package:dual_store/src/core/models/meta_info.dart';
 import 'package:dual_store/src/interfaces/types.dart';
 
 /// [ all bytes(32)
@@ -19,9 +20,32 @@ import 'package:dual_store/src/interfaces/types.dart';
 /// data(n bytes)
 /// ]
 mixin MetaIo on IEngineLogic {
+  /// ### Delete Mark
+  bool deleteMark(Meta meta) {
+    final lastPos = writeRaf.positionSync();
+    // go meta pos
+    writeRaf.setPositionSync(meta.headerOffset);
+    writeRaf.writeByteSync(RecordFlag.deleted.value);
+
+    writeRaf.setPositionSync(lastPos);
+    return true;
+  }
+
+  /// ### Read Data From Meta
+  Uint8List getDataFromMeta(Meta meta) {
+    readRaf.setPositionSync(meta.dataStartOffset);
+    final data = readRaf.readSync(meta.dataSize);
+    assert(data.length == meta.dataSize);
+
+    return data;
+  }
+
   /// ### Read Meta Info List
-  List<Meta> getAllMeta() {
-    List<Meta> list = [];
+  MetaInfo getMetaInfo() {
+    Map<int, Meta> allMeta = {};
+    int lastId = 0;
+    int deletedCount = 0;
+    int deletedSize = 0;
 
     readRaf.setPositionSync(duHeaderLength);
 
@@ -69,26 +93,38 @@ mixin MetaIo on IEngineLogic {
         throw Exception('Data section corrupted');
       }
       readRaf.setPositionSync(nextPos);
+      // record total size
+      final totalSize = duRecordHeaderLength + metaSize + dataSize;
 
+      // check flag
+      if (flag == .deleted) {
+        deletedCount++;
+        deletedSize += totalSize;
+        continue;
+      }
+      if (id > lastId) lastId = id;
       // add meta
-      list.add(
-        Meta(
-          flag: flag,
-          id: id,
-          parentId: parentId,
-          adapterTypeId: adapterTypeId,
-          metaType: metaType,
-          metaSize: metaSize,
-          dataType: dataType,
-          dataSize: dataSize,
-          metaData: metaData,
-          headerOffset: headerOffset,
-          dataStartOffset: dataStartPos,
-          totalSize: duRecordHeaderLength + metaSize + dataSize,
-        ),
+      allMeta[id] = Meta(
+        flag: flag,
+        id: id,
+        parentId: parentId,
+        adapterTypeId: adapterTypeId,
+        metaType: metaType,
+        metaSize: metaSize,
+        dataType: dataType,
+        dataSize: dataSize,
+        metaData: metaData,
+        headerOffset: headerOffset,
+        dataStartOffset: dataStartPos,
+        totalSize: totalSize,
       );
     }
 
-    return list;
+    return MetaInfo(
+      lastId: lastId,
+      deletedCount: deletedCount,
+      deletedSize: deletedSize,
+      allMeta: allMeta,
+    );
   }
 }

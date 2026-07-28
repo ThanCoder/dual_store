@@ -12,12 +12,12 @@ void main() async {
 
   // print(du.readHeader());
 
-  // final meta = utf8.encode('i am meta 2');
-  // final data = utf8.encode('i am content 2');
+  // final meta = utf8.encode('i am meta 1');
+  // final data = utf8.encode('i am content 1');
 
   // du.writeRecord(
   //   DuRecord(
-  //     id: 2,
+  //     id: 1,
   //     metaSize: meta.length,
   //     dataSize: data.length,
   //     metaData: meta,
@@ -26,9 +26,15 @@ void main() async {
   // );
   // du.flush();
 
-  for (var meta in du.getAllMeta()) {
-    print(meta);
-  }
+  // du.deleteMark(du.getMetaInfo().allMeta[1]!);
+
+  print('before: ${du.getMetaInfo()}');
+
+  // du.compact(du.getHeader(), du.getMetaInfo().allMeta);
+
+  print('after: ${du.getMetaInfo()}');
+
+  // du.deleteMark(info.allMeta[1]!);
 
   du.close();
 }

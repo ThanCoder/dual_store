@@ -33,7 +33,7 @@ class DuRecord {
     required this.id,
     this.parentId = -1,
     this.adapterTypeId = -1,
-    this.metaType = MetaType.json,
+    this.metaType = MetaType.text,
     this.dataType = DataType.text,
     required this.metaSize,
     required this.metaData,
