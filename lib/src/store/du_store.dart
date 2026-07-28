@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dual_store/src/core/engine/du_header_io.dart';
 import 'package:dual_store/src/core/engine/dual_engine.dart';
+import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/core/models/du_record.dart';
 import 'package:dual_store/src/core/models/meta_info.dart';
 import 'package:dual_store/src/store/adapter/i_du_adapter.dart';
@@ -37,6 +40,11 @@ class DuStore extends IDuStore with AdapterHandler, BoxHandler, EngineHandler {
     _metaInfo = _engine.getMetaInfo();
   }
 
+  /// ### Magic Header
+  DuHeader getHeader() {
+    return _engine.getHeader();
+  }
+
   Future<Uint8List?> getContentById(int id) async {
     final meta = _metaInfo.allMeta[id];
     if (meta == null || meta.dataSize == 0) return null;
@@ -46,5 +54,23 @@ class DuStore extends IDuStore with AdapterHandler, BoxHandler, EngineHandler {
   @override
   Future<void> close() async {
     _engine.close();
+  }
+
+  static Future<DuHeader?> readHeader(String path) async {
+    final file = File(path);
+    if (file.existsSync()) {
+      final raf = await file.open(mode: FileMode.read);
+      return DuHeaderIo.getHeader(raf);
+    }
+    return null;
+  }
+
+  static DuHeader? readHeaderSync(String path) {
+    final file = File(path);
+    if (file.existsSync()) {
+      final raf = file.openSync(mode: FileMode.read);
+      return DuHeaderIo.getHeaderSync(raf);
+    }
+    return null;
   }
 }

@@ -9,14 +9,12 @@ import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/engine/dual_engine.dart';
 import 'package:dual_store/src/core/models/du_record.dart';
 import 'package:dual_store/src/interfaces/types.dart';
-import 'package:dual_store/src/store/adapter/i_du_adapter.dart';
-import 'package:dual_store/src/store/adapter/i_du_model.dart';
-import 'package:dual_store/src/store/du_store.dart';
 
 void main() async {
   final du = DuStore();
 
   await du.open('store.du');
+  print('header: ${du.getHeader()}');
 
   du.registerAdapterNotExists(UserAdapter());
   du.registerAdapterNotExists(UserAdapter());
@@ -37,16 +35,8 @@ class UserAdapter extends IDuAdapter<User> {
   int get adapterTypeId => 1;
 
   @override
-  DataType get contentDataType => .none;
-
-  @override
   int getId(User value) {
     return value.generatedId;
-  }
-
-  @override
-  Uint8List? toContent(User value) {
-    return null;
   }
 
   @override
@@ -63,6 +53,7 @@ class UserAdapter extends IDuAdapter<User> {
 class User extends IDuModel {
   @override
   late int generatedId;
+
   final String title;
   User({required this.title});
 

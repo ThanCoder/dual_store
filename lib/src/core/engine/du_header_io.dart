@@ -5,7 +5,21 @@ import 'package:dual_store/src/core/models/du_header.dart';
 
 class DuHeaderIo {
   /// Reader Header
-  static DuHeader getHeader(RandomAccessFile raf) {
+  static Future<DuHeader> getHeader(RandomAccessFile raf) async {
+    raf.setPositionSync(0);
+    final bytes = await raf.read(6);
+    if (bytes.length != 6) {
+      throw Exception(
+        '[EngineHeader:readHeader]: `read count: 6 -> fond count: ${bytes.length}` read error!',
+      );
+    }
+    final magic = utf8.decode(bytes.sublist(0, 4));
+    final version = bytes[4];
+    final id = bytes[5];
+    return DuHeader(magic: magic, version: version, dbID: id);
+  }
+
+  static DuHeader getHeaderSync(RandomAccessFile raf) {
     raf.setPositionSync(0);
     final bytes = raf.readSync(6);
     if (bytes.length != 6) {
