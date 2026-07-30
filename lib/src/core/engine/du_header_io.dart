@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:dual_store/src/core/models/du_header.dart';
 
+const int duHeaderFixedLength = 6;
+
 class DuHeaderIo {
   /// Reader Header
   static Future<DuHeader> getHeader(RandomAccessFile raf) async {

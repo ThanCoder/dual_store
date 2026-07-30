@@ -51,6 +51,7 @@ enum DuContentDataType {
 
 enum DuContentFlag {
   none(0),
+  raw(0),
   compressed(1);
 
   final int value;

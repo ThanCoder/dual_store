@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:dual_store/src/interfaces/types.dart';
+import 'package:dual_store/src/core/engine/interfaces/types.dart';
 import 'package:dual_store/src/store/adapter/i_du_model.dart';
 
 abstract class IDuMetaAdapter<T extends IDuModel> {

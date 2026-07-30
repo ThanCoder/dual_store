@@ -1,15 +1,14 @@
 import 'dart:io';
 
-import 'package:dual_store/src/core/engine/i_engine_logic.dart';
-import 'package:dual_store/src/core/engine/mixin_logics/compact_io.dart';
-import 'package:dual_store/src/core/engine/mixin_logics/engine_header.dart';
-import 'package:dual_store/src/core/engine/mixin_logics/engine_io.dart';
-import 'package:dual_store/src/core/engine/mixin_logics/meta_reader.dart';
-import 'package:dual_store/src/core/engine/mixin_logics/meta_writer.dart';
+import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
+import 'package:dual_store/src/core/engine/mixin_logics/engine_header_logic.dart';
+import 'package:dual_store/src/core/engine/mixin_logics/engine_io_logic.dart';
+import 'package:dual_store/src/core/engine/mixin_logics/meta_info_logic.dart';
+import 'package:dual_store/src/core/engine/mixin_logics/writer_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 
 class DualEngine extends IEngineLogic
-    with EngineIo, EngineHeader, MetaWriter, MetaReader, CompactIo {
+    with EngineIoLogic, EngineHeaderLogic, WriterLogic, MetaInfoLogic {
   @override
   late RandomAccessFile writeRaf;
   @override
