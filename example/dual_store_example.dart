@@ -13,13 +13,19 @@ import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 
 void main() async {
   final eng = DualEngine();
-  eng.open('store.du');
+  await eng.open('store.du');
+  // eng.openSync('store.du');
 
   // await eng.writeRecord(
-  //   JsonMetaWriter({'name': 'thancoder'}, adapterId: 1, id: 1, parentId: -1),
-  //   TextContentWriter('i am text content'),
+  //   JsonMetaWriter({'name': 'three'}, adapterId: 1, id: 3, parentId: -1),
+  //   TextContentWriter('i am text content three'),
   // );
+  eng.removeMeta(eng.ctx.allMeta[2]!);
 
-  final res = await eng.getMetaInfo();
-  print(res);
+  final info = eng.ctx;
+  print('info: $info \n\n');
+
+  for (var meta in info.allMeta.values) {
+    print('Meta: $meta');
+  }
 }

@@ -20,10 +20,20 @@ import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 ///]
 mixin WriterLogic on IEngineLogic {
   @override
-  Future<void> writeRecord(
+  void writeRecordSync(
     IMetaWriter metaWriter,
-    IContentWriter contentWriter,
-  ) async {
+    IContentWriter contentWriter, {
+    bool diskFlush = true,
+  }) {
+    final headerOffset = ctx.writeRaf.positionSync();
+
+    if (metaWriter.size != metaWriter.data.length) {
+      throw StateError(
+        'Meta size mismatch: '
+        'expected=${contentWriter.size}, actual=${metaWriter.data.length}',
+      );
+    }
+
     final m = ByteData(recordMetaFixedHeaderLength);
     int offset = 0;
 
@@ -41,8 +51,8 @@ mixin WriterLogic on IEngineLogic {
     offset += 4;
 
     // write meta data
-    await writeRaf.writeFrom(m.buffer.asUint8List());
-    await writeRaf.writeFrom(metaWriter.data);
+    ctx.writeRaf.writeFromSync(m.buffer.asUint8List());
+    ctx.writeRaf.writeFromSync(metaWriter.data);
 
     // write content header
     final c = ByteData(recordContentFixedHeaderLength);
@@ -55,12 +65,133 @@ mixin WriterLogic on IEngineLogic {
     c.setUint64(offset, contentWriter.size, Endian.little);
     offset += 8;
 
-    await writeRaf.writeFrom(c.buffer.asUint8List());
+    ctx.writeRaf.writeFromSync(c.buffer.asUint8List());
+
+    final contentStartOffset = ctx.writeRaf.positionSync();
+
     // content မရှိဘူး
-    if (contentWriter.size == 0) {
-      return;
+    if (contentWriter.size > 0) {
+      // write content data
+      final written = contentWriter.writeToSync(ctx.writeRaf);
+      if (written != contentWriter.size) {
+        throw StateError(
+          'Content size mismatch: '
+          'expected=${contentWriter.size}, actual=$written',
+        );
+      }
     }
-    // write content data
-    await contentWriter.writeTo(writeRaf);
+    if (diskFlush) {
+      ctx.writeRaf.flushSync();
+    }
+
+    // update ctx
+    ctx.lastId = metaWriter.id;
+    ctx.allMeta[metaWriter.id] = .new(
+      flag: metaWriter.flag,
+      id: metaWriter.id,
+      parentId: metaWriter.parentId,
+      adapterId: metaWriter.adapterId,
+      metaType: metaWriter.metaType,
+      metaSize: metaWriter.size,
+      metaData: metaWriter.data,
+      contentDataType: contentWriter.dataType,
+      contentFlag: contentWriter.contentFlag,
+      contentSize: contentWriter.size,
+      headerOffset: headerOffset,
+      contentStartOffset: contentStartOffset,
+      totalSize:
+          recordMetaFixedHeaderLength +
+          recordContentFixedHeaderLength +
+          metaWriter.size +
+          contentWriter.size,
+    );
+  }
+
+  @override
+  Future<void> writeRecord(
+    IMetaWriter metaWriter,
+    IContentWriter contentWriter, {
+    bool diskFlush = true,
+  }) async {
+    final headerOffset = ctx.writeRaf.positionSync();
+
+    if (metaWriter.size != metaWriter.data.length) {
+      throw StateError(
+        'Meta size mismatch: '
+        'expected=${contentWriter.size}, actual=${metaWriter.data.length}',
+      );
+    }
+
+    final m = ByteData(recordMetaFixedHeaderLength);
+    int offset = 0;
+
+    m.setUint8(offset, metaWriter.flag.value);
+    offset += 1;
+    m.setUint64(offset, metaWriter.id, Endian.little);
+    offset += 8;
+    m.setUint64(offset, metaWriter.parentId, Endian.little);
+    offset += 8;
+    m.setUint8(offset, metaWriter.adapterId);
+    offset += 1;
+    m.setUint8(offset, metaWriter.metaType.value);
+    offset += 1;
+    m.setUint32(offset, metaWriter.size, Endian.little);
+    offset += 4;
+
+    // write meta data
+    await ctx.writeRaf.writeFrom(m.buffer.asUint8List());
+    await ctx.writeRaf.writeFrom(metaWriter.data);
+
+    // write content header
+    final c = ByteData(recordContentFixedHeaderLength);
+    offset = 0;
+
+    c.setUint8(offset, contentWriter.dataType.value);
+    offset += 1;
+    c.setUint8(offset, contentWriter.contentFlag.value);
+    offset += 1;
+    c.setUint64(offset, contentWriter.size, Endian.little);
+    offset += 8;
+
+    await ctx.writeRaf.writeFrom(c.buffer.asUint8List());
+
+    final contentStartOffset = ctx.writeRaf.positionSync();
+
+    // content မရှိဘူး
+    if (contentWriter.size > 0) {
+      // write content data
+      final written = await contentWriter.writeTo(ctx.writeRaf);
+      if (written != contentWriter.size) {
+        throw StateError(
+          'Content size mismatch: '
+          'expected=${contentWriter.size}, actual=$written',
+        );
+      }
+    }
+    if (diskFlush) {
+      ctx.writeRaf.flushSync();
+    }
+
+    // update ctx
+    ctx.lastId = metaWriter.id;
+    ctx.allMeta[metaWriter.id] = .new(
+      flag: metaWriter.flag,
+      id: metaWriter.id,
+      parentId: metaWriter.parentId,
+      adapterId: metaWriter.adapterId,
+      metaType: metaWriter.metaType,
+      metaSize: metaWriter.size,
+      metaData: metaWriter.data,
+      contentDataType: contentWriter.dataType,
+      contentFlag: contentWriter.contentFlag,
+      contentSize: contentWriter.size,
+      headerOffset: headerOffset,
+      contentStartOffset: contentStartOffset,
+      totalSize:
+          recordMetaFixedHeaderLength +
+          recordContentFixedHeaderLength +
+          metaWriter.size +
+          contentWriter.size,
+    );
   }
 }

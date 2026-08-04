@@ -14,7 +14,9 @@ abstract class IContentWriter {
   DuContentFlag get contentFlag;
   DuContentDataType get dataType;
   int get size;
-  Future<void> writeTo(RandomAccessFile raf);
+  // written bytes
+  Future<int> writeTo(RandomAccessFile raf);
+  int writeToSync(RandomAccessFile raf);
 }
 
 class NoneContentWriter extends IContentWriter {
@@ -28,7 +30,9 @@ class NoneContentWriter extends IContentWriter {
   int get size => 0;
 
   @override
-  Future<void> writeTo(RandomAccessFile raf) async {}
+  Future<int> writeTo(RandomAccessFile raf) async => 0;
+  @override
+  int writeToSync(RandomAccessFile raf) => 0;
 }
 
 class TextContentWriter extends IContentWriter {
@@ -45,7 +49,14 @@ class TextContentWriter extends IContentWriter {
   int get size => _data.length;
 
   @override
-  Future<void> writeTo(RandomAccessFile raf) async {
+  Future<int> writeTo(RandomAccessFile raf) async {
     await raf.writeFrom(_data);
+    return _data.length;
+  }
+
+  @override
+  int writeToSync(RandomAccessFile raf) {
+    raf.writeFromSync(_data);
+    return _data.length;
   }
 }
