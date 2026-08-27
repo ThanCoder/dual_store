@@ -29,7 +29,7 @@ class DualEngine extends IEngineLogic
     if (!exists || writeRaf.lengthSync() == 0) {
       writeHeader(writeRaf, const DuHeader(magic: 'dust'));
 
-      writeRaf.flushSync();
+      await writeRaf.flush();
     }
 
     final header = readHeader(readRaf);
