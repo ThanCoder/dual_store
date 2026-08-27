@@ -19,7 +19,6 @@ const int recordContentFixedHeaderLength = 19;
 ///]
 abstract class IMetaWriter {
   DuFlag get flag;
-  int get id;
   int get parentId;
   int get adapterId;
   DuMetaType get metaType;
@@ -27,13 +26,12 @@ abstract class IMetaWriter {
   int get size => data.length;
 }
 
-class JsonMetaWriter extends IMetaWriter {
+class JsonMetaWriter implements IMetaWriter {
   final Uint8List _data;
   JsonMetaWriter(
     Map<String, dynamic> map, {
     this.flag = DuFlag.active,
     required this.adapterId,
-    required this.id,
     required this.parentId,
   }) : _data = utf8.encode(jsonEncode(map));
 
@@ -44,9 +42,6 @@ class JsonMetaWriter extends IMetaWriter {
   final DuFlag flag;
 
   @override
-  final int id;
-
-  @override
   Uint8List get data => _data;
 
   @override
@@ -54,4 +49,7 @@ class JsonMetaWriter extends IMetaWriter {
 
   @override
   final int parentId;
+
+  @override
+  int get size => _data.length;
 }

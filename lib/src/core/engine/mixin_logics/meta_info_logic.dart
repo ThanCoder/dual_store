@@ -8,6 +8,7 @@ import 'package:dual_store/src/core/engine/interfaces/types.dart';
 import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 import 'package:dual_store/src/core/models/meta.dart';
 import 'package:dual_store/src/core/models/meta_info.dart';
+import 'package:dual_store/src/result_t.dart';
 
 /// Meta
 ///
@@ -23,131 +24,134 @@ import 'package:dual_store/src/core/models/meta_info.dart';
 ///
 mixin MetaInfoLogic on IEngineLogic {
   /// ### Get Meta Info
-  Future<MetaInfo> getMetaInfo(String path) async {
+  Future<Result<MetaInfo, String>> getMetaInfo(String path) async {
     final file = File(path);
 
     if (file.lengthSync() == 0) {
-      return .empty();
+      return Ok(.empty());
     }
-    return await Isolate.run(() => _getMetaInfoSync(path));
+    return await Isolate.run<Result<MetaInfo, String>>(
+      () => _getMetaInfoSync(path),
+    );
   }
 
   /// ### Get Meta Info Sync
-  MetaInfo getMetaInfoSync(String path) {
-    final file = File(path);
-
-    if (file.lengthSync() == 0) {
-      return .empty();
-    }
+  Result<MetaInfo, String> getMetaInfoSync(String path) {
     return _getMetaInfoSync(path);
   }
 }
 
 /// Get Meta Info Sync
-MetaInfo _getMetaInfoSync(String path) {
+Result<MetaInfo, String> _getMetaInfoSync(String path) {
   final readRaf = File(path).openSync(mode: FileMode.read);
   if (readRaf.lengthSync() == 0) {
-    return .empty();
+    return Ok(.empty());
   }
 
-  int lastId = 0;
-  int deletedCount = 0;
-  int deletedSize = 0;
-  final Map<int, Meta> allMeta = {};
-  // skip header
-  readRaf.setPositionSync(duHeaderFixedLength);
+  try {
+    int lastId = 0;
+    int deletedCount = 0;
+    int deletedSize = 0;
+    final Map<int, Meta> allMeta = {};
+    // skip header
+    readRaf.setPositionSync(duHeaderFixedLength);
 
-  final size = readRaf.lengthSync();
-  // read header
-  while (readRaf.positionSync() < size) {
-    final headerOffset = readRaf.positionSync();
+    final size = readRaf.lengthSync();
+    // read header
+    while (readRaf.positionSync() < size) {
+      final headerOffset = readRaf.positionSync();
 
-    final hBytes = readRaf.readSync(recordMetaFixedHeaderLength);
-    assert(hBytes.length == recordMetaFixedHeaderLength);
+      final hBytes = readRaf.readSync(recordMetaFixedHeaderLength);
+      assert(hBytes.length == recordMetaFixedHeaderLength);
 
-    final d = ByteData.sublistView(hBytes);
-    int offset = 0;
+      final d = ByteData.sublistView(hBytes);
+      int offset = 0;
 
-    final flag = DuFlag.fromValue(d.getUint8(offset));
-    offset += 1;
-    final id = d.getUint64(offset, Endian.little);
-    offset += 8;
-    final parentId = d.getUint64(offset, Endian.little);
-    offset += 8;
-    final adapterId = d.getUint8(offset);
-    offset += 1;
-    final metaType = DuMetaType.fromValue(d.getUint8(offset));
-    offset += 1;
-    final metaSize = d.getUint32(offset, Endian.little);
-    offset += 4;
-    // meta data
-    final metaData = readRaf.readSync(metaSize);
+      final flag = DuFlag.fromValue(d.getUint8(offset));
+      offset += 1;
+      final id = d.getUint64(offset, Endian.little);
+      offset += 8;
+      final parentId = d.getUint64(offset, Endian.little);
+      offset += 8;
+      final adapterId = d.getUint8(offset);
+      offset += 1;
+      final metaType = DuMetaType.fromValue(d.getUint8(offset));
+      offset += 1;
+      final metaSize = d.getUint32(offset, Endian.little);
+      offset += 4;
+      // meta data
+      final metaData = readRaf.readSync(metaSize);
 
-    // content
-    final cBytes = readRaf.readSync(recordContentFixedHeaderLength);
+      // content
+      final cBytes = readRaf.readSync(recordContentFixedHeaderLength);
 
-    if (hBytes.length != recordMetaFixedHeaderLength) {
-      throw Exception("Invalid meta header");
-    }
-
-    final cd = ByteData.sublistView(cBytes);
-    offset = 0;
-
-    final contentDataType = DuContentDataType.fromValue(cd.getUint8(offset));
-    offset += 1;
-    final contentFlag = DuContentFlag.fromValue(cd.getUint8(offset));
-    offset += 1;
-    final contentSize = cd.getUint64(offset, Endian.little);
-    offset += 8;
-
-    final contentStartOffset = readRaf.positionSync();
-
-    // skip content
-    if (contentSize > 0) {
-      final next = readRaf.positionSync() + contentSize;
-
-      if (next > size) {
-        throw Exception("Invalid content size");
+      if (hBytes.length != recordMetaFixedHeaderLength) {
+        throw Exception("Invalid meta header");
       }
 
-      readRaf.setPositionSync(next);
-    }
-    final totalSize =
-        recordContentFixedHeaderLength +
-        recordMetaFixedHeaderLength +
-        metaSize +
-        contentSize;
-    // last id
-    if (id > lastId) lastId = id;
+      final cd = ByteData.sublistView(cBytes);
+      offset = 0;
 
-    // check content
-    if (flag == .deleted) {
-      deletedSize += totalSize;
-      deletedCount += 1;
-      continue;
+      final contentDataType = DuContentDataType.fromValue(cd.getUint8(offset));
+      offset += 1;
+      final contentFlag = DuContentFlag.fromValue(cd.getUint8(offset));
+      offset += 1;
+      final contentSize = cd.getUint64(offset, Endian.little);
+      offset += 8;
+
+      final contentStartOffset = readRaf.positionSync();
+
+      // skip content
+      if (contentSize > 0) {
+        final next = readRaf.positionSync() + contentSize;
+
+        if (next > size) {
+          throw Exception("Invalid content size");
+        }
+
+        readRaf.setPositionSync(next);
+      }
+      final totalSize =
+          recordContentFixedHeaderLength +
+          recordMetaFixedHeaderLength +
+          metaSize +
+          contentSize;
+      // last id
+      if (id > lastId) lastId = id;
+
+      // check content
+      if (flag == .deleted) {
+        deletedSize += totalSize;
+        deletedCount += 1;
+        continue;
+      }
+      // add
+      allMeta[id] = .new(
+        flag: flag,
+        id: id,
+        parentId: parentId,
+        adapterId: adapterId,
+        metaType: metaType,
+        metaSize: metaSize,
+        metaData: metaData,
+        contentDataType: contentDataType,
+        contentFlag: contentFlag,
+        contentSize: contentSize,
+        headerOffset: headerOffset,
+        contentStartOffset: contentStartOffset,
+        totalSize: totalSize,
+      );
     }
-    // add
-    allMeta[id] = .new(
-      flag: flag,
-      id: id,
-      parentId: parentId,
-      adapterId: adapterId,
-      metaType: metaType,
-      metaSize: metaSize,
-      metaData: metaData,
-      contentDataType: contentDataType,
-      contentFlag: contentFlag,
-      contentSize: contentSize,
-      headerOffset: headerOffset,
-      contentStartOffset: contentStartOffset,
-      totalSize: totalSize,
+
+    return Ok(
+      .new(
+        lastId: lastId,
+        deletedCount: deletedCount,
+        deletedSize: deletedSize,
+        allMeta: allMeta,
+      ),
     );
+  } catch (e) {
+    return Err(e.toString());
   }
-
-  return .new(
-    lastId: lastId,
-    deletedCount: deletedCount,
-    deletedSize: deletedSize,
-    allMeta: allMeta,
-  );
 }

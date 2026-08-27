@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dual_store/src/core/engine/du_header_io.dart';
+import 'package:dual_store/src/core/engine/mixin_logics/content_reader_logic.dart';
 import 'package:dual_store/src/core/models/engine_context.dart';
 import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
 import 'package:dual_store/src/core/engine/mixin_logics/engine_header_logic.dart';
@@ -8,91 +9,134 @@ import 'package:dual_store/src/core/engine/mixin_logics/meta_info_logic.dart';
 import 'package:dual_store/src/core/engine/mixin_logics/meta_remover_logic.dart';
 import 'package:dual_store/src/core/engine/mixin_logics/writer_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
+import 'package:dual_store/src/result_t.dart';
 
 class DualEngine extends IEngineLogic
-    with EngineHeaderLogic, WriterLogic, MetaInfoLogic, MetaRemoverLogic {
+    with
+        EngineHeaderLogic,
+        WriterLogic,
+        MetaInfoLogic,
+        MetaRemoverLogic,
+        ContentReaderLogic {
   DualEngine();
 
   @override
   late EngineContext ctx;
+  @override
+  late RandomAccessFile readRaf;
+  @override
+  late RandomAccessFile writeRaf;
 
   @override
-  Future<void> open(String path) async {
-    final file = File(path);
+  Future<Result<bool, String>> open(String path) async {
+    try {
+      final file = File(path);
 
-    final exists = file.existsSync();
+      final exists = file.existsSync();
 
-    final writeRaf = file.openSync(mode: FileMode.append);
+      writeRaf = file.openSync(mode: FileMode.append);
 
-    final readRaf = file.openSync(mode: FileMode.read);
+      readRaf = file.openSync(mode: FileMode.read);
 
-    if (!exists || writeRaf.lengthSync() == 0) {
-      writeHeader(writeRaf, const DuHeader(magic: 'dust'));
+      if (!exists || writeRaf.lengthSync() == 0) {
+        writeHeader(writeRaf, const DuHeader(magic: 'dust'));
 
-      await writeRaf.flush();
+        await writeRaf.flush();
+      }
+
+      final headerRes = readHeader(readRaf);
+      if (headerRes.isErr) {
+        return Err(headerRes.unwrapError());
+      }
+      final metaInfoRes = await getMetaInfo(path);
+      if (metaInfoRes.isErr) {
+        return Err(metaInfoRes.unwrapError());
+      }
+      final metaInfo = metaInfoRes.unwrap();
+      ctx = .new(
+        writeRaf: writeRaf,
+        readRaf: readRaf,
+        header: headerRes.unwrap(),
+        allMeta: metaInfo.allMeta,
+        lastId: metaInfo.lastId,
+        deletedCount: metaInfo.deletedCount,
+        deletedSize: metaInfo.deletedSize,
+      );
+      return Ok(true);
+    } catch (e) {
+      return Err(e.toString());
     }
-
-    final header = readHeader(readRaf);
-
-    final metaInfo = await getMetaInfo(path);
-
-    ctx = .new(
-      writeRaf: writeRaf,
-      readRaf: readRaf,
-      header: header,
-      allMeta: metaInfo.allMeta,
-      lastId: metaInfo.lastId,
-      deletedCount: metaInfo.deletedCount,
-      deletedSize: metaInfo.deletedSize,
-    );
   }
 
   @override
-  void openSync(String path) {
-    final file = File(path);
+  Result<bool, String> openSync(String path) {
+    try {
+      final file = File(path);
 
-    final exists = file.existsSync();
+      final exists = file.existsSync();
 
-    final writeRaf = file.openSync(mode: FileMode.append);
-    final readRaf = file.openSync(mode: FileMode.read);
+      writeRaf = file.openSync(mode: FileMode.append);
+      readRaf = file.openSync(mode: FileMode.read);
 
-    if (!exists || writeRaf.lengthSync() == 0) {
-      writeHeader(writeRaf, const DuHeader(magic: 'dust'));
+      if (!exists || writeRaf.lengthSync() == 0) {
+        writeHeader(writeRaf, const DuHeader(magic: 'dust'));
 
-      writeRaf.flushSync();
+        writeRaf.flushSync();
+      }
+
+      final headerRes = readHeader(readRaf);
+      if (headerRes.isErr) {
+        return Err(headerRes.unwrapError());
+      }
+      final metaInfoRes = getMetaInfoSync(path);
+      if (metaInfoRes.isErr) {
+        return Err(metaInfoRes.unwrapError());
+      }
+      final metaInfo = metaInfoRes.unwrap();
+
+      ctx = .new(
+        writeRaf: writeRaf,
+        readRaf: readRaf,
+        header: headerRes.unwrap(),
+        allMeta: metaInfo.allMeta,
+        lastId: metaInfo.lastId,
+        deletedCount: metaInfo.deletedCount,
+        deletedSize: metaInfo.deletedSize,
+      );
+      return Ok(true);
+    } catch (e) {
+      return Err(e.toString());
     }
-
-    final header = readHeader(readRaf);
-    final metaInfo = getMetaInfoSync(path);
-
-    ctx = .new(
-      writeRaf: writeRaf,
-      readRaf: readRaf,
-      header: header,
-      allMeta: metaInfo.allMeta,
-      lastId: metaInfo.lastId,
-      deletedCount: metaInfo.deletedCount,
-      deletedSize: metaInfo.deletedSize,
-    );
   }
 
   @override
-  void close() {
-    ctx.readRaf.closeSync();
-    ctx.writeRaf.closeSync();
+  Result<bool, String> close() {
+    try {
+      ctx.readRaf.closeSync();
+      ctx.writeRaf.closeSync();
+      return Ok(true);
+    } catch (e) {
+      return Err(e.toString());
+    }
   }
 
   @override
-  void flush() {
-    ctx.writeRaf.flushSync();
+  Result<bool, String> flush() {
+    try {
+      ctx.writeRaf.flushSync();
+      return Ok(true);
+    } catch (e) {
+      return Err(e.toString());
+    }
   }
+  //*********************Static Methods******************************** */
 
   /// ### Read Header
-  static Future<DuHeader?> getHeader(
+  static Future<Result<DuHeader, String>> getHeader(
     String path, {
     bool showErrorLog = false,
   }) async {
-    DuHeader? header;
+    late Result<DuHeader, String> header;
     try {
       final raf = await File(path).open(mode: FileMode.read);
       header = await DuHeaderIo.getHeader(raf);
@@ -106,8 +150,11 @@ class DualEngine extends IEngineLogic
   }
 
   /// ### Read Header Sync
-  static DuHeader? getHeaderAsync(String path, {bool showErrorLog = false}) {
-    DuHeader? header;
+  static Result<DuHeader, String> getHeaderAsync(
+    String path, {
+    bool showErrorLog = false,
+  }) {
+    late Result<DuHeader, String> header;
     try {
       final raf = File(path).openSync(mode: FileMode.read);
       header = DuHeaderIo.getHeaderSync(raf);

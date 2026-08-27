@@ -3,19 +3,18 @@ import 'dart:typed_data';
 
 import 'package:dual_store/src/core/engine/interfaces/types.dart';
 
-abstract interface class IMetaReader {
+abstract interface class IMetaReader<R> {
+  const IMetaReader();
+
   DuMetaType get metaType;
-
   Uint8List get data;
-
-  dynamic decode();
+  R decode();
 }
 
-class JsonMetaReader extends IMetaReader {
+class JsonMetaReader implements IMetaReader<Map<String, dynamic>> {
   @override
   final Uint8List data;
-
-  JsonMetaReader(this.data);
+  const JsonMetaReader(this.data);
 
   @override
   DuMetaType get metaType => DuMetaType.json;

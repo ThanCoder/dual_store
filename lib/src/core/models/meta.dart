@@ -26,8 +26,9 @@ class Meta {
   final DuContentDataType contentDataType;
   final DuContentFlag contentFlag;
   final int contentSize;
-  final int headerOffset;
   final int contentStartOffset;
+  
+  final int headerOffset;
   final int totalSize;
   const Meta({
     required this.flag,

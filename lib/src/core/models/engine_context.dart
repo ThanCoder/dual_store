@@ -23,6 +23,11 @@ class EngineContext {
     required this.allMeta,
   });
 
+  int get generatedId {
+    lastId = lastId + 1;
+    return lastId;
+  }
+
   @override
   String toString() {
     return 'EngineContext(header: $header, lastId: $lastId, deletedCount: $deletedCount, deletedSize: $deletedSize)';

@@ -37,9 +37,10 @@ enum DuMetaType {
 enum DuContentDataType {
   none(0),
   text(1),
-  bytes(2),
-  file(3),
-  stream(4);
+  json(2),
+  bytes(3),
+  stream(4),
+  file(5);
 
   final int value;
   const DuContentDataType(this.value);
