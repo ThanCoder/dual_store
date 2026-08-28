@@ -11,6 +11,8 @@ import 'package:dual_store/src/core/engine/interfaces/types.dart';
 /// contentData(n bytes)
 ///]
 abstract class IContentWriter {
+  const IContentWriter();
+
   DuContentFlag get contentFlag;
   DuContentDataType get dataType;
   int get size;
@@ -20,6 +22,7 @@ abstract class IContentWriter {
 }
 
 class NoneContentWriter implements IContentWriter {
+  const NoneContentWriter();
   @override
   DuContentFlag get contentFlag => DuContentFlag.none;
 
@@ -34,6 +37,23 @@ class NoneContentWriter implements IContentWriter {
   @override
   int writeToSync(RandomAccessFile raf) => 0;
 }
+
+// class AutoUpdateContentWriter implements IContentWriter {
+//   const AutoUpdateContentWriter();
+//   @override
+//   DuContentFlag get contentFlag => DuContentFlag.none;
+
+//   @override
+//   DuContentDataType get dataType => DuContentDataType.none;
+
+//   @override
+//   int get size => 0;
+
+//   @override
+//   Future<int> writeTo(RandomAccessFile raf) async => 0;
+//   @override
+//   int writeToSync(RandomAccessFile raf) => 0;
+// }
 
 class TextRawContentWriter implements IContentWriter {
   final Uint8List _data;

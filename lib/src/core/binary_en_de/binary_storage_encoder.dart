@@ -11,6 +11,12 @@ class BinaryStorageEncoder {
   final _map = <String, dynamic>{};
 
   /// Supports: int, double, bool, String
+  BinaryStorageEncoder putMap(Map<String, dynamic> map) {
+    _map.addAll(map);
+    return this;
+  }
+
+  /// Supports: int, double, bool, String
   void put(String key, dynamic value) {
     if (value is! int &&
         value is! bool &&

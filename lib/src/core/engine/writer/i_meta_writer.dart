@@ -1,6 +1,8 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:dual_store/src/core/binary_en_de/binary_storage_encoder.dart';
 import 'package:dual_store/src/core/engine/interfaces/types.dart';
 
 const int recordMetaFixedHeaderLength = 23;
@@ -31,8 +33,8 @@ class JsonMetaWriter implements IMetaWriter {
   JsonMetaWriter(
     Map<String, dynamic> map, {
     this.flag = DuFlag.active,
-    required this.adapterId,
-    required this.parentId,
+    this.adapterId = 0,
+    this.parentId = 0,
   }) : _data = utf8.encode(jsonEncode(map));
 
   @override
@@ -49,6 +51,32 @@ class JsonMetaWriter implements IMetaWriter {
 
   @override
   final int parentId;
+
+  @override
+  int get size => _data.length;
+}
+
+class BinaryMetaWriter implements IMetaWriter {
+  final Uint8List _data;
+  @override
+  final int parentId;
+  @override
+  final int adapterId;
+
+  BinaryMetaWriter(
+    Map<String, dynamic> map, {
+    this.adapterId = 0,
+    this.parentId = 0,
+  }) : _data = BinaryStorageEncoder().putMap(map).toBytes();
+
+  @override
+  Uint8List get data => _data;
+
+  @override
+  final DuFlag flag = .active;
+
+  @override
+  final DuMetaType metaType = .binary;
 
   @override
   int get size => _data.length;

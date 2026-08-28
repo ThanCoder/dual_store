@@ -1,55 +1,63 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-// ignore_for_file: unused_import, unused_local_variable
-
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:dual_store/dual_store.dart';
-import 'package:dual_store/src/core/binary_en_de/binary_storage_decoder.dart';
-import 'package:dual_store/src/core/binary_en_de/binary_storage_encoder.dart';
-import 'package:dual_store/src/core/engine/dual_engine.dart';
-import 'package:dual_store/src/core/engine/interfaces/types.dart';
-import 'package:dual_store/src/core/engine/reader/i_content_reader.dart';
-import 'package:dual_store/src/core/engine/writer/i_content_writer.dart';
-import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 
 void main() async {
-  final en = BinaryStorageEncoder();
-  en.put('id', 1);
-  en.put('deleted-id', -1);
-  en.put('volume', 1.0);
-  en.put('volume-del', -1.0);
-  en.put('name', 'thancoder');
-  en.put('isMan', true);
-  // en.put('isMan', en);
-  final bytes = en.toBytes();
-  print('bytes: $bytes');
+  final st = DualStore();
 
-  final de = BinaryStorageDecoder(bytes);
-  print(de.decodeAll());
+  await st.open('user.du');
 
-  // final eng = DualEngine();
-  // await eng.open('store.du');
-  // eng.openSync('store.du');
+  st.registerAdapter(UserAdapter());
 
-  // await eng.writeRecord(
-  //   JsonMetaWriter({'name': 'three'}, adapterId: 1, parentId: -1),
-  //   TextRawContentWriter('i am text content three'),
-  //   id: eng.ctx.generatedId,
+  DuBox<User> box = st.getBox<User>();
+
+  // await box.update(
+  //   1,
+  //   value: .new(name: 'thancoder', age: 18),
+  //   contentWriter: TextCompressContentWriter('i am compressed text body updated'),
   // );
-  // // eng.removeMeta(eng.ctx.allMeta[2]!);
+  // await box.deleteById(2);
 
-  // final info = eng.ctx;
-  // print('info: $info \n\n');
+  for (var user in await box.getAll()) {
+    print('ID: ${user.generatedId}- user: $user');
+    final con = await box.getContent(user);
+    if (con.isErr) {
+      print('content Error: ${con.unwrapError()}');
+      return;
+    }
+    print('content: ${con.unwrap()}');
+  }
 
-  // if (info.allMeta.values.isNotEmpty) {
-  //   final meta = info.allMeta.values.last;
-  //   final text = eng.readContentExactSync(TextRawContentReader(meta));
-  //   print('text: ${text.unwrap()}');
-  // }
+  print('lastId: ${st.lastId}');
+  print('deletedCount: ${st.deletedCount}');
+  print('deletedSize: ${st.deletedSize}');
 
-  // for (var meta in info.allMeta.values) {
-  //   print('Meta: $meta');
-  // }
+  st.close();
+}
+
+class User extends IDuModel {
+  final String name;
+  final int age;
+  User({required this.name, required this.age});
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{'name': name, 'age': age};
+  }
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(name: map['name'] as String, age: map['age'] as int);
+  }
+
+  @override
+  String toString() => 'User(name: $name, age: $age)';
+}
+
+class UserAdapter extends IDuJsonMetaAdapter<User> {
+  @override
+  User fromMap(Map<String, dynamic> map) {
+    return User.fromMap(map);
+  }
+
+  @override
+  Map<String, dynamic> toMap(User value) {
+    return value.toMap();
+  }
 }

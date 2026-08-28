@@ -24,7 +24,8 @@ enum RecordType {
 
 enum DuMetaType {
   unknown(-1),
-  json(1);
+  json(1),
+  binary(2);
 
   final int value;
   const DuMetaType(this.value);
@@ -52,8 +53,8 @@ enum DuContentDataType {
 
 enum DuContentFlag {
   none(0),
-  raw(0),
-  compressed(1);
+  raw(1),
+  compressed(2);
 
   final int value;
   const DuContentFlag(this.value);

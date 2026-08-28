@@ -5,16 +5,58 @@ import 'package:dual_store/src/result_t.dart';
 
 mixin MetaRemoverLogic on IEngineLogic {
   /// ### Remove Meta
+  Future<Result<bool, String>> removeMeta(
+    Meta meta, {
+    bool diskFlush = true,
+  }) async {
+    return await removeMetaById(meta.id);
+  }
+
+  /// ### Remove Meta
   ///
-  /// Synchronously flushes the contents of the file to disk.
-  Result<bool, String> removeMeta(Meta meta, {bool diskFlush = true}) {
-    return removeMetaById(meta.id);
+  Future<Result<bool, String>> removeMetaById(
+    int id, {
+    bool diskFlush = true,
+  }) async {
+    try {
+      final size = await ctx.writeRaf.length();
+
+      if (size == 0) {
+        return Ok(false);
+      }
+      final meta = ctx.allMeta[id];
+      if (meta == null) return Ok(false);
+
+      await ctx.writeRaf.setPosition(meta.headerOffset);
+      await ctx.writeRaf.writeByte(DuFlag.deleted.value);
+
+      // go end post
+      await ctx.writeRaf.setPosition(size);
+
+      if (diskFlush) {
+        await ctx.writeRaf.flush();
+      }
+      // update ctx
+      ctx.deletedSize += meta.totalSize;
+      ctx.deletedCount += 1;
+      ctx.allMeta.remove(id);
+      return Ok(true);
+    } catch (e) {
+      return Err(e.toString());
+    }
   }
 
   /// ### Remove Meta
   ///
   /// Synchronously flushes the contents of the file to disk.
-  Result<bool, String> removeMetaById(int id, {bool diskFlush = true}) {
+  Result<bool, String> removeMetaSync(Meta meta, {bool diskFlush = true}) {
+    return removeMetaByIdSync(meta.id);
+  }
+
+  /// ### Remove Meta
+  ///
+  /// Synchronously flushes the contents of the file to disk.
+  Result<bool, String> removeMetaByIdSync(int id, {bool diskFlush = true}) {
     try {
       final size = ctx.writeRaf.lengthSync();
 

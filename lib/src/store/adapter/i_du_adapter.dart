@@ -1,44 +1,45 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:dual_store/src/core/engine/interfaces/types.dart';
-import 'package:dual_store/src/store/adapter/i_du_model.dart';
+import 'package:dual_store/src/core/engine/reader/i_meta_reader.dart';
+import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
+import 'package:dual_store/src/store/dual_store_base.dart';
 
-abstract class IDuMetaAdapter<T extends IDuModel> {
-  /// ### Record Query Id
-  ///
-  /// You Can use filter
-  int getParentId(T value) => -1;
+sealed class IDuMetaAdapter<T extends IDuModel> {
+  int get adapterId => 0;
+  int get parentId => 0;
 
-  /// ### Query Data Type
-  ///
-  /// I Will Used Ram Memory.
-  ///
-  DuMetaType get metaType => .json;
+  T fromMap(Map<String, dynamic> map);
+  Map<String, dynamic> toMap(T value);
 
-  /// ### Adapter Type
-  ///
-  /// I Will use Box
-  int get adapterTypeId;
+  ///return JsonMetaWriter(toMap(value));
+  IMetaWriter toMetaWriter(T value);
 
-  /// ### T get id
-  int getId(T value);
+  ///return JsonMetaReader(rawData);
+  IMetaReader<Map<String, dynamic>> toMetaReader(Uint8List rawData);
+}
 
-  Map<String, dynamic> toMeta(T value);
-  T fromStorage(Map<String, dynamic> meta);
-
-  /// Meta
-  Uint8List encodeMeta(Map<String, dynamic> meta) {
-    if (metaType == .json) {
-      return Uint8List.fromList(utf8.encode(jsonEncode(meta)));
-    }
-    throw UnsupportedError('MetaType $metaType is not supported.');
+abstract class IDuJsonMetaAdapter<T extends IDuModel>
+    extends IDuMetaAdapter<T> {
+  @override
+  IMetaWriter toMetaWriter(T value) {
+    return JsonMetaWriter(toMap(value));
   }
 
-  Map<String, dynamic> decodeMeta(Uint8List bytes) {
-    if (metaType == .json) {
-      return jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
-    }
-    throw UnsupportedError('MetaType $metaType is not supported.');
+  @override
+  IMetaReader<Map<String, dynamic>> toMetaReader(Uint8List rawData) {
+    return JsonMetaReader(rawData);
+  }
+}
+
+abstract class IDuBinaryMetaAdapter<T extends IDuModel>
+    extends IDuMetaAdapter<T> {
+  @override
+  IMetaWriter toMetaWriter(T value) {
+    return BinaryMetaWriter(toMap(value));
+  }
+
+  @override
+  IMetaReader<Map<String, dynamic>> toMetaReader(Uint8List rawData) {
+    return BinaryMataReader(rawData);
   }
 }
