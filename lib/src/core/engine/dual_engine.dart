@@ -28,8 +28,22 @@ class DualEngine extends IEngineLogic
   late RandomAccessFile writeRaf;
 
   @override
+  Future<Result<bool, String>> reload() async {
+    close();
+    return await open(readRaf.path);
+  }
+
+  @override
+  Result<bool, String> reloadSync() {
+    close();
+    return openSync(readRaf.path);
+  }
+
+  @override
   Future<Result<bool, String>> open(String path) async {
     try {
+      ctx.opened = false;
+
       final file = File(path);
 
       final exists = file.existsSync();
@@ -62,6 +76,7 @@ class DualEngine extends IEngineLogic
         deletedCount: metaInfo.deletedCount,
         deletedSize: metaInfo.deletedSize,
       );
+      ctx.opened = true;
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -71,6 +86,8 @@ class DualEngine extends IEngineLogic
   @override
   Result<bool, String> openSync(String path) {
     try {
+      ctx.opened = false;
+
       final file = File(path);
 
       final exists = file.existsSync();
@@ -103,6 +120,7 @@ class DualEngine extends IEngineLogic
         deletedCount: metaInfo.deletedCount,
         deletedSize: metaInfo.deletedSize,
       );
+      ctx.opened = true;
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -114,6 +132,7 @@ class DualEngine extends IEngineLogic
     try {
       ctx.readRaf.closeSync();
       ctx.writeRaf.closeSync();
+      ctx.opened = false;
       return Ok(true);
     } catch (e) {
       return Err(e.toString());

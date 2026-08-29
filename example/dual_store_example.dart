@@ -2,12 +2,22 @@ import 'package:dual_store/dual_store.dart';
 
 void main() async {
   final st = DualStore();
+  st.registerAdapter(UserAdapter());
 
   await st.open('user.du');
 
-  st.registerAdapter(UserAdapter());
-
   DuBox<User> box = st.getBox<User>();
+  final res = await box.getOne((val) => val.age == 18);
+  if (res.isOk) {
+    print('res: ${res.unwrap()}');
+  }
+
+  // final user = await box.getById(2);
+  // if (user.isErr) {
+  //   print('Err: ${user.unwrapError()}');
+  //   return;
+  // }
+  // print('user: ${user.unwrap()}');
 
   // await box.update(
   //   1,
@@ -16,7 +26,7 @@ void main() async {
   // );
   // await box.deleteById(2);
 
-  for (var user in await box.getAll()) {
+  for (var user in (await box.getAll()).unwrap()) {
     print('ID: ${user.generatedId}- user: $user');
     final con = await box.getContent(user);
     if (con.isErr) {

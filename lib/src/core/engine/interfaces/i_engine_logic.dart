@@ -9,6 +9,8 @@ abstract class IEngineLogic {
   EngineContext get ctx;
   RandomAccessFile get readRaf;
   RandomAccessFile get writeRaf;
+  Future<Result<bool, String>> reload();
+  Result<bool, String> reloadSync();
 
   /// ### Open DB
   Future<Result<bool, String>> open(String path);

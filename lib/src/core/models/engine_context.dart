@@ -23,6 +23,8 @@ class EngineContext {
     required this.allMeta,
   });
 
+  bool opened = false;
+
   int get generatedId {
     lastId = lastId + 1;
     return lastId;

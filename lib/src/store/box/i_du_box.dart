@@ -4,7 +4,10 @@ import 'package:dual_store/src/result_t.dart';
 import '../dual_store_base.dart';
 
 abstract class IDuBox<T extends IDuModel> {
-  Future<List<T>> getAll();
+  Future<Result<List<T>, String>> getAll();
+
+  Future<Result<T, String>> getById(int id);
+  Future<Result<T, String>> getOne(bool Function(T val) onTest);
 
   /// Supported:
   /// `NoneContentWriter`,
@@ -13,6 +16,7 @@ abstract class IDuBox<T extends IDuModel> {
   Future<Result<bool, String>> add(
     T value, {
     IContentWriter contentWriter = const NoneContentWriter(),
+    bool diskFlush = true,
   });
 
   /// Supported:
