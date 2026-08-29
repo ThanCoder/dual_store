@@ -59,27 +59,40 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<bool, String>> add(
-    T value, {
-    IContentWriter contentWriter = const NoneContentWriter(),
-    bool diskFlush = true,
-  }) async {
-    return await _store._eng.writeRecord(
-      _adapter.toMetaWriter(value),
-      contentWriter,
-      id: _store._eng.ctx.generatedId,
-      diskFlush: diskFlush,
-    );
-  }
-
-  @override
   Future<Result<R, String>> getContent<R>(T value) async {
     return await _store._eng.readContent<R>(value._meta);
   }
 
   @override
   Future<Result<bool, String>> deleteById(int id) async {
-    return await _store._eng.removeMetaById(id);
+    final res = await _store._eng.removeMetaById(id);
+    if (res.isOk) {
+      _store._con.add(StateChanged());
+      _store._con.add(DeleteId(id));
+    }
+    return res;
+  }
+
+  @override
+  Future<Result<bool, String>> add(
+    T value, {
+    IContentWriter contentWriter = const NoneContentWriter(),
+    bool diskFlush = true,
+  }) async {
+    final newId = _store._eng.ctx.generatedId;
+    final res = await _store._eng.writeRecord(
+      _adapter.toMetaWriter(value),
+      contentWriter,
+      id: newId,
+      diskFlush: diskFlush,
+    );
+
+    if (res.isOk) {
+      _store._con.add(StateChanged());
+      _store._con.add(AddId(newId));
+    }
+
+    return res;
   }
 
   @override
@@ -92,10 +105,15 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     if (remRes.isErr) {
       return Err(remRes.unwrapError());
     }
-    return await _store._eng.writeRecord(
+    final res = await _store._eng.writeRecord(
       _adapter.toMetaWriter(value),
       contentWriter,
       id: id,
     );
+    if (res.isOk) {
+      _store._con.add(StateChanged());
+      _store._con.add(UpdateId(id));
+    }
+    return res;
   }
 }

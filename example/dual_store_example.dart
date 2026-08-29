@@ -4,7 +4,12 @@ void main() async {
   final st = DualStore();
   st.registerAdapter(UserAdapter());
 
-  await st.open('user.du');
+  final openRes = await st.open('user.du');
+
+  if (openRes.isErr) {
+    print('open error: ${openRes.unwrapError()}');
+    return;
+  }
 
   DuBox<User> box = st.getBox<User>();
   final res = await box.getOne((val) => val.age == 18);
@@ -25,8 +30,12 @@ void main() async {
   //   contentWriter: TextCompressContentWriter('i am compressed text body updated'),
   // );
   // await box.deleteById(2);
-
-  for (var user in (await box.getAll()).unwrap()) {
+  final listRes = await box.getAll();
+  if (listRes.isErr) {
+    print(listRes.unwrapError());
+    return;
+  }
+  for (var user in listRes.unwrap()) {
     print('ID: ${user.generatedId}- user: $user');
     final con = await box.getContent(user);
     if (con.isErr) {
@@ -60,7 +69,7 @@ class User extends IDuModel {
   String toString() => 'User(name: $name, age: $age)';
 }
 
-class UserAdapter extends IDuJsonMetaAdapter<User> {
+class UserAdapter extends IDuBinaryMetaAdapter<User> {
   @override
   User fromMap(Map<String, dynamic> map) {
     return User.fromMap(map);

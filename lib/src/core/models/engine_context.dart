@@ -5,23 +5,15 @@ import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/core/models/meta.dart';
 
 class EngineContext {
-  RandomAccessFile writeRaf;
-  RandomAccessFile readRaf;
-  DuHeader header;
+  late RandomAccessFile writeRaf;
+  late RandomAccessFile readRaf;
+  DuHeader header = .new(magic: 'dust');
 
   int lastId;
   int deletedCount;
   int deletedSize;
-  Map<int, Meta> allMeta;
-  EngineContext({
-    required this.writeRaf,
-    required this.readRaf,
-    required this.header,
-    this.lastId = 0,
-    this.deletedCount = 0,
-    this.deletedSize = 0,
-    required this.allMeta,
-  });
+  Map<int, Meta> allMeta = {};
+  EngineContext({this.lastId = 0, this.deletedCount = 0, this.deletedSize = 0});
 
   bool opened = false;
 

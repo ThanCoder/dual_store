@@ -2,19 +2,18 @@
 import 'package:dual_store/src/core/models/meta.dart';
 
 class MetaInfo extends Iterable<Meta> {
-  int lastId;
-  int deletedCount;
-  int deletedSize;
-  final Map<int, Meta> allMeta;
-  MetaInfo({
-    required this.lastId,
-    required this.deletedCount,
-    required this.deletedSize,
-    required this.allMeta,
-  });
+  int lastId = 0;
+  int deletedCount = 0;
+  int deletedSize = 0;
+  Map<int, Meta> allMeta = {};
 
-  factory MetaInfo.empty() {
-    return MetaInfo(lastId: 0, deletedCount: 0, deletedSize: 0, allMeta: {});
+  MetaInfo({this.lastId = 0, this.deletedCount = 0, this.deletedSize = 0});
+
+  void setEmpty() {
+    lastId = 0;
+    deletedCount = 0;
+    deletedSize = 0;
+    allMeta.clear();
   }
 
   void addMeta(Meta meta) {

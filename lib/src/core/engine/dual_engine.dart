@@ -21,7 +21,7 @@ class DualEngine extends IEngineLogic
   DualEngine();
 
   @override
-  late EngineContext ctx;
+  EngineContext ctx = .new();
   @override
   late RandomAccessFile readRaf;
   @override
@@ -54,7 +54,6 @@ class DualEngine extends IEngineLogic
 
       if (!exists || writeRaf.lengthSync() == 0) {
         writeHeader(writeRaf, const DuHeader(magic: 'dust'));
-
         await writeRaf.flush();
       }
 
@@ -67,15 +66,14 @@ class DualEngine extends IEngineLogic
         return Err(metaInfoRes.unwrapError());
       }
       final metaInfo = metaInfoRes.unwrap();
-      ctx = .new(
-        writeRaf: writeRaf,
-        readRaf: readRaf,
-        header: headerRes.unwrap(),
-        allMeta: metaInfo.allMeta,
-        lastId: metaInfo.lastId,
-        deletedCount: metaInfo.deletedCount,
-        deletedSize: metaInfo.deletedSize,
-      );
+
+      ctx.writeRaf = writeRaf;
+      ctx.readRaf = readRaf;
+      ctx.header = headerRes.unwrap();
+      ctx.allMeta = metaInfo.allMeta;
+      ctx.lastId = metaInfo.lastId;
+      ctx.deletedCount = metaInfo.deletedCount;
+      ctx.deletedSize = metaInfo.deletedSize;
       ctx.opened = true;
       return Ok(true);
     } catch (e) {
@@ -111,15 +109,13 @@ class DualEngine extends IEngineLogic
       }
       final metaInfo = metaInfoRes.unwrap();
 
-      ctx = .new(
-        writeRaf: writeRaf,
-        readRaf: readRaf,
-        header: headerRes.unwrap(),
-        allMeta: metaInfo.allMeta,
-        lastId: metaInfo.lastId,
-        deletedCount: metaInfo.deletedCount,
-        deletedSize: metaInfo.deletedSize,
-      );
+      ctx.writeRaf = writeRaf;
+      ctx.readRaf = readRaf;
+      ctx.header = headerRes.unwrap();
+      ctx.allMeta = metaInfo.allMeta;
+      ctx.lastId = metaInfo.lastId;
+      ctx.deletedCount = metaInfo.deletedCount;
+      ctx.deletedSize = metaInfo.deletedSize;
       ctx.opened = true;
       return Ok(true);
     } catch (e) {

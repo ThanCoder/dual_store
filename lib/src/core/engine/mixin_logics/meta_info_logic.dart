@@ -28,7 +28,7 @@ mixin MetaInfoLogic on IEngineLogic {
     final file = File(path);
 
     if (file.lengthSync() == 0) {
-      return Ok(.empty());
+      return Ok(.new());
     }
     return await Isolate.run<Result<MetaInfo, String>>(
       () => _getMetaInfoSync(path),
@@ -45,7 +45,7 @@ mixin MetaInfoLogic on IEngineLogic {
 Result<MetaInfo, String> _getMetaInfoSync(String path) {
   final readRaf = File(path).openSync(mode: FileMode.read);
   if (readRaf.lengthSync() == 0) {
-    return Ok(.empty());
+    return Ok(.new());
   }
 
   try {
@@ -144,12 +144,8 @@ Result<MetaInfo, String> _getMetaInfoSync(String path) {
     }
 
     return Ok(
-      .new(
-        lastId: lastId,
-        deletedCount: deletedCount,
-        deletedSize: deletedSize,
-        allMeta: allMeta,
-      ),
+      .new(lastId: lastId, deletedCount: deletedCount, deletedSize: deletedSize)
+        ..allMeta = allMeta,
     );
   } catch (e) {
     return Err(e.toString());
