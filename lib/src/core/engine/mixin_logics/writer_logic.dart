@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 
+import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
 import 'package:dual_store/src/core/engine/writer/i_content_writer.dart';
 import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
+import 'package:dual_store/src/core/models/meta.dart';
 import 'package:dual_store/src/result_t.dart';
 
 ///header
@@ -86,9 +88,7 @@ mixin WriterLogic on IEngineLogic {
       if (diskFlush) {
         ctx.writeRaf.flushSync();
       }
-
-      // update ctx
-      ctx.allMeta[id] = .new(
+      final meta = Meta(
         flag: metaWriter.flag,
         id: id,
         parentId: metaWriter.parentId,
@@ -107,6 +107,11 @@ mixin WriterLogic on IEngineLogic {
             metaWriter.size +
             contentWriter.size,
       );
+
+      // update ctx
+      ctx.allMeta[id] = meta;
+      eventController.add(AddId(id));
+      eventController.add(RecordWrited(meta));
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -121,8 +126,6 @@ mixin WriterLogic on IEngineLogic {
     required int id,
   }) async {
     try {
-     
-
       final headerOffset = ctx.writeRaf.positionSync();
 
       if (metaWriter.size != metaWriter.data.length) {
@@ -182,8 +185,7 @@ mixin WriterLogic on IEngineLogic {
         ctx.writeRaf.flushSync();
       }
 
-      // update ctx
-      ctx.allMeta[id] = .new(
+      final meta = Meta(
         flag: metaWriter.flag,
         id: id,
         parentId: metaWriter.parentId,
@@ -202,6 +204,11 @@ mixin WriterLogic on IEngineLogic {
             metaWriter.size +
             contentWriter.size,
       );
+
+      // update ctx
+      ctx.allMeta[id] = meta;
+      eventController.add(AddId(id));
+      eventController.add(RecordWrited(meta));
       return Ok(true);
     } catch (e) {
       return Err(e.toString());

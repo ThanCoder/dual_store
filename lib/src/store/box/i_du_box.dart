@@ -15,6 +15,11 @@ abstract class IDuBox<T extends IDuModel> {
   /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
   Future<Result<bool, String>> add(
     T value, {
+
+    /// Supported:
+    /// `NoneContentWriter`,
+    ///
+    /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
     IContentWriter contentWriter = const NoneContentWriter(),
     bool diskFlush = true,
   });
@@ -26,6 +31,11 @@ abstract class IDuBox<T extends IDuModel> {
   Future<Result<bool, String>> update(
     int id, {
     required T value,
+
+    /// Supported:
+    /// `NoneContentWriter`,
+    ///
+    /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
     IContentWriter contentWriter = const NoneContentWriter(),
   });
 

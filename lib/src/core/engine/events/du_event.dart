@@ -1,8 +1,12 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-part of '../dual_store_base.dart';
+import 'package:dual_store/src/core/models/meta.dart';
 
-sealed class DuEvent {
+abstract class DuEvent {
   const DuEvent();
+}
+
+class RecordWrited extends DuEvent {
+  final Meta meta;
+  const RecordWrited(this.meta);
 }
 
 class Open extends DuEvent {}
@@ -11,7 +15,10 @@ class Close extends DuEvent {}
 
 class Reload extends DuEvent {}
 
-class StateChanged extends DuEvent {}
+class HeaderWrited extends DuEvent {}
+
+/// Synchronously flushes the contents of the file to disk.
+class FlushToDisk extends DuEvent {}
 
 class UpdateId extends DuEvent {
   final int id;

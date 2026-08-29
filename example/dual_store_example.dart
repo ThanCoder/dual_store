@@ -4,6 +4,10 @@ void main() async {
   final st = DualStore();
   st.registerAdapter(UserAdapter());
 
+  st.events.all.listen((event) {
+    print('event: $event');
+  });
+
   final openRes = await st.open('user.du');
 
   if (openRes.isErr) {
@@ -12,6 +16,12 @@ void main() async {
   }
 
   DuBox<User> box = st.getBox<User>();
+
+  // await box.add(
+  //   .new(name: 'thancoder', age: 30),
+  //   contentWriter: TextRawContentWriter('i am raw content text'),
+  // );
+
   final res = await box.getOne((val) => val.age == 18);
   if (res.isOk) {
     print('res: ${res.unwrap()}');
@@ -37,7 +47,7 @@ void main() async {
   }
   for (var user in listRes.unwrap()) {
     print('ID: ${user.generatedId}- user: $user');
-    final con = await box.getContent(user);
+    final con = await box.getContent<String>(user);
     if (con.isErr) {
       print('content Error: ${con.unwrapError()}');
       return;
@@ -45,10 +55,9 @@ void main() async {
     print('content: ${con.unwrap()}');
   }
 
-  print('lastId: ${st.lastId}');
-  print('deletedCount: ${st.deletedCount}');
-  print('deletedSize: ${st.deletedSize}');
-
+  print('lastId: ${st.state.lastId}');
+  print('deletedCount: ${st.state.deletedCount}');
+  print('deletedSize: ${st.state.deletedSize}');
   st.close();
 }
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dual_store/src/core/engine/du_header_io.dart';
+import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/mixin_logics/content_reader_logic.dart';
 import 'package:dual_store/src/core/models/engine_context.dart';
 import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
@@ -21,7 +22,7 @@ class DualEngine extends IEngineLogic
   DualEngine();
 
   @override
-  EngineContext ctx = .new();
+  final EngineContext ctx = .new();
   @override
   late RandomAccessFile readRaf;
   @override
@@ -30,7 +31,11 @@ class DualEngine extends IEngineLogic
   @override
   Future<Result<bool, String>> reload() async {
     close();
-    return await open(readRaf.path);
+    final res = await open(readRaf.path);
+    if (res.isOk) {
+      eventController.add(Reload());
+    }
+    return res;
   }
 
   @override
@@ -75,6 +80,8 @@ class DualEngine extends IEngineLogic
       ctx.deletedCount = metaInfo.deletedCount;
       ctx.deletedSize = metaInfo.deletedSize;
       ctx.opened = true;
+      eventController.add(Open());
+
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -117,6 +124,7 @@ class DualEngine extends IEngineLogic
       ctx.deletedCount = metaInfo.deletedCount;
       ctx.deletedSize = metaInfo.deletedSize;
       ctx.opened = true;
+      eventController.add(Open());
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -129,6 +137,7 @@ class DualEngine extends IEngineLogic
       ctx.readRaf.closeSync();
       ctx.writeRaf.closeSync();
       ctx.opened = false;
+      eventController.add(Close());
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -139,6 +148,7 @@ class DualEngine extends IEngineLogic
   Result<bool, String> flush() {
     try {
       ctx.writeRaf.flushSync();
+      eventController.add(FlushToDisk());
       return Ok(true);
     } catch (e) {
       return Err(e.toString());

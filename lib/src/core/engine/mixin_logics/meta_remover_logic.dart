@@ -1,3 +1,4 @@
+import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
 import 'package:dual_store/src/core/engine/interfaces/types.dart';
 import 'package:dual_store/src/core/models/meta.dart';
@@ -40,6 +41,8 @@ mixin MetaRemoverLogic on IEngineLogic {
       ctx.deletedSize += meta.totalSize;
       ctx.deletedCount += 1;
       ctx.allMeta.remove(id);
+      eventController.add(DeleteId(id));
+
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -79,6 +82,7 @@ mixin MetaRemoverLogic on IEngineLogic {
       ctx.deletedSize += meta.totalSize;
       ctx.deletedCount += 1;
       ctx.allMeta.remove(id);
+      eventController.add(DeleteId(id));
       return Ok(true);
     } catch (e) {
       return Err(e.toString());

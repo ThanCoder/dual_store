@@ -1,4 +1,4 @@
-import 'package:dual_store/dual_store.dart';
+import 'package:dual_store/src/core/engine/events/du_event.dart';
 
 class DuEventState {
   const DuEventState({
