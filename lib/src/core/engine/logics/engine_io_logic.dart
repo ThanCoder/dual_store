@@ -19,7 +19,11 @@ mixin EngineIoLogic on IEngineLogic {
   @override
   Result<bool, String> reloadSync() {
     closeSync();
-    return openSync(ctx.readRaf.path);
+    final res = openSync(ctx.readRaf.path);
+    if (res.isOk) {
+      eventController.add(Reload());
+    }
+    return res;
   }
 
   @override

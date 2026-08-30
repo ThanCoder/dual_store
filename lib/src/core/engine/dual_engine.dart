@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:dual_store/src/core/engine/du_header_io.dart';
-import 'package:dual_store/src/core/engine/engine_logics/engine_io_logic.dart';
-import 'package:dual_store/src/core/engine/engine_logics/content_reader_logic.dart';
+import 'package:dual_store/src/core/engine/logics/engine_io_logic.dart';
+import 'package:dual_store/src/core/engine/logics/content_reader_logic.dart';
 import 'package:dual_store/src/core/models/engine_context.dart';
 import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
-import 'package:dual_store/src/core/engine/engine_logics/engine_header_logic.dart';
-import 'package:dual_store/src/core/engine/engine_logics/meta_info_logic.dart';
-import 'package:dual_store/src/core/engine/engine_logics/meta_remover_logic.dart';
-import 'package:dual_store/src/core/engine/engine_logics/writer_logic.dart';
+import 'package:dual_store/src/core/engine/logics/engine_header_logic.dart';
+import 'package:dual_store/src/core/engine/logics/meta_info_logic.dart';
+import 'package:dual_store/src/core/engine/logics/meta_remover_logic.dart';
+import 'package:dual_store/src/core/engine/logics/writer_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
 
