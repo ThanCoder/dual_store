@@ -69,8 +69,8 @@ mixin ContentReaderLogic on IEngineLogic {
   ///
   Result<R, String> readContentExactSync<R>(IContentReader<R> reader) {
     try {
-      readRaf.setPositionSync(reader.meta.contentStartOffset);
-      return Ok(reader.readSync(readRaf));
+      ctx.readRaf.setPositionSync(reader.meta.contentStartOffset);
+      return Ok(reader.readSync(ctx.readRaf));
     } catch (e) {
       return Err(e.toString());
     }
@@ -86,8 +86,8 @@ mixin ContentReaderLogic on IEngineLogic {
     IContentReader<R> reader,
   ) async {
     try {
-      readRaf.setPositionSync(reader.meta.contentStartOffset);
-      return Ok(await reader.read(readRaf));
+      ctx.readRaf.setPositionSync(reader.meta.contentStartOffset);
+      return Ok(await reader.read(ctx.readRaf));
     } catch (e) {
       return Err(e.toString());
     }

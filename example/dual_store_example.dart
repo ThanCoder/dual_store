@@ -17,6 +17,8 @@ void main() async {
 
   DuBox<User> box = st.getBox<User>();
 
+  // box.getAll()
+
   // await box.add(
   //   .new(name: 'thancoder', age: 30),
   //   contentWriter: TextRawContentWriter('i am raw content text'),

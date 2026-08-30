@@ -25,9 +25,12 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<T, String>> getOne(bool Function(T val) onTest) async {
+  Future<Result<T, String>> getOne(
+    bool Function(T val) onTest, {
+    int? parentId,
+  }) async {
     try {
-      final listRes = await getAll();
+      final listRes = await getAll(parentId: parentId);
       if (listRes.isErr) {
         return Err(listRes.unwrapError());
       }
@@ -41,12 +44,14 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<List<T>, String>> getAll() async {
+  Future<Result<List<T>, String>> getAll({int? parentId}) async {
     try {
       final list = <T>[];
       final allMeta = _store._eng.ctx.allMeta;
       for (var meta in allMeta.values) {
         if (meta.adapterId != _adapter.adapterId) continue;
+        if (parentId != null && meta.parentId != parentId) continue;
+
         final reader = _adapter.toMetaReader(meta.metaData);
         final val = _adapter.fromMap(reader.decode());
         val._meta = meta;

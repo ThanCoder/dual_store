@@ -10,10 +10,12 @@ const int duHeaderLength = 6;
 
 /// [magic(4),version(1),dbID(1)]
 mixin EngineHeaderLogic on IEngineLogic {
+  @override
   Result<DuHeader, String> readHeader(RandomAccessFile readRaf) {
     return DuHeaderIo.getHeaderSync(readRaf);
   }
 
+  @override
   Result<bool, String> writeHeader(RandomAccessFile writeRaf, DuHeader header) {
     eventController.add(HeaderWrited());
     return DuHeaderIo.writeHeader(header, writeRaf);

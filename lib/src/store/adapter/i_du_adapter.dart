@@ -18,6 +18,39 @@ sealed class IDuMetaAdapter<T extends IDuModel> {
   IMetaReader<Map<String, dynamic>> toMetaReader(Uint8List rawData);
 }
 
+/// Example
+///
+/// ```dart
+/// class User extends IDuModel {
+///   final String name;
+///   final int age;
+///   User({required this.name, required this.age});
+///
+///   Map<String, dynamic> toMap() {
+///     return <String, dynamic>{'name': name, 'age': age};
+///   }
+///
+///   factory User.fromMap(Map<String, dynamic> map) {
+///     return User(name: map['name'] as String, age: map['age'] as int);
+///   }
+///
+///   @override
+///   String toString() => 'User(name: $name, age: $age)';
+/// }
+///
+/// class UserAdapter extends IDuJsonMetaAdapter<User> {
+///   @override
+///   User fromMap(Map<String, dynamic> map) {
+///     return User.fromMap(map);
+///   }
+///
+///   @override
+///   Map<String, dynamic> toMap(User value) {
+///     return value.toMap();
+///   }
+/// }
+///
+/// ```
 abstract class IDuJsonMetaAdapter<T extends IDuModel>
     extends IDuMetaAdapter<T> {
   @override
@@ -31,6 +64,39 @@ abstract class IDuJsonMetaAdapter<T extends IDuModel>
   }
 }
 
+/// Example
+///
+/// ```dart
+/// class User extends IDuModel {
+///   final String name;
+///   final int age;
+///   User({required this.name, required this.age});
+///
+///   Map<String, dynamic> toMap() {
+///     return <String, dynamic>{'name': name, 'age': age};
+///   }
+///
+///   factory User.fromMap(Map<String, dynamic> map) {
+///     return User(name: map['name'] as String, age: map['age'] as int);
+///   }
+///
+///   @override
+///   String toString() => 'User(name: $name, age: $age)';
+/// }
+///
+/// class UserAdapter extends IDuBinaryMetaAdapter<User> {
+///   @override
+///   User fromMap(Map<String, dynamic> map) {
+///     return User.fromMap(map);
+///   }
+///
+///   @override
+///   Map<String, dynamic> toMap(User value) {
+///     return value.toMap();
+///   }
+/// }
+///
+/// ```
 abstract class IDuBinaryMetaAdapter<T extends IDuModel>
     extends IDuMetaAdapter<T> {
   @override

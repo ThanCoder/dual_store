@@ -24,6 +24,7 @@ import 'package:dual_store/src/result_t.dart';
 ///
 mixin MetaInfoLogic on IEngineLogic {
   /// ### Get Meta Info
+  @override
   Future<Result<MetaInfo, String>> getMetaInfo(String path) async {
     final file = File(path);
 
@@ -36,6 +37,7 @@ mixin MetaInfoLogic on IEngineLogic {
   }
 
   /// ### Get Meta Info Sync
+  @override
   Result<MetaInfo, String> getMetaInfoSync(String path) {
     return _getMetaInfoSync(path);
   }

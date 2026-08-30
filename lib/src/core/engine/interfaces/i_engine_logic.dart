@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/engine/events/du_event.dart';
+import 'package:dual_store/src/core/models/du_header.dart';
+import 'package:dual_store/src/core/models/meta_info.dart';
 import 'package:dual_store/src/store/du_event_state.dart';
 import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 import 'package:dual_store/src/core/models/engine_context.dart';
@@ -10,8 +12,13 @@ import 'package:dual_store/src/result_t.dart';
 
 abstract class IEngineLogic {
   EngineContext get ctx;
-  RandomAccessFile get readRaf;
-  RandomAccessFile get writeRaf;
+  // header
+  Result<DuHeader, String> readHeader(RandomAccessFile readRaf);
+  Result<bool, String> writeHeader(RandomAccessFile writeRaf, DuHeader header);
+  //meta
+  Future<Result<MetaInfo, String>> getMetaInfo(String path);
+  Result<MetaInfo, String> getMetaInfoSync(String path);
+
   Future<Result<bool, String>> reload();
   Result<bool, String> reloadSync();
 
@@ -27,8 +34,11 @@ abstract class IEngineLogic {
   /// flushes the contents of the file to disk.
   Future<Result<bool, String>> flush();
 
-  /// ### Close DB
-  Result<bool, String> close();
+  /// Close DB
+  Result<bool, String> closeSync();
+
+  /// Close DB
+  Future<Result<bool, String>> close();
 
   Future<Result<bool, String>> writeRecord(
     IMetaWriter metaWriter,

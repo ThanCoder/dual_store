@@ -16,14 +16,20 @@ sealed class IDualStore {
   //*************Engine******************** */
   final _eng = DualEngine();
 
-  Result<bool, String> close() {
-    return _eng.close();
+  Future<Result<bool, String>> close() async {
+    return await _eng.close();
   }
 
+  Result<bool, String> closeSync() {
+    return _eng.closeSync();
+  }
+
+  /// flushes the contents of the file to disk.
   Future<Result<bool, String>> flush() async {
     return await _eng.flush();
   }
 
+  /// Synchronously flushes the contents of the file to disk.
   Result<bool, String> flushSync() {
     return _eng.flushSync();
   }
