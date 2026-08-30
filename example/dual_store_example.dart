@@ -21,6 +21,7 @@ void main() async {
   //   .new(name: 'thancoder', age: 30),
   //   contentWriter: TextRawContentWriter('i am raw content text'),
   // );
+  //
 
   final res = await box.getOne((val) => val.age == 18);
   if (res.isOk) {

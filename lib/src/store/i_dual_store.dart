@@ -16,6 +16,18 @@ sealed class IDualStore {
   //*************Engine******************** */
   final _eng = DualEngine();
 
+  Result<bool, String> close() {
+    return _eng.close();
+  }
+
+  Future<Result<bool, String>> flush() async {
+    return await _eng.flush();
+  }
+
+  Result<bool, String> flushSync() {
+    return _eng.flushSync();
+  }
+
   //*************Events******************** */
   Stream<DuEvent> get _events => _eng.eventController.stream;
 

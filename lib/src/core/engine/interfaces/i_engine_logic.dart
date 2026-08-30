@@ -22,7 +22,10 @@ abstract class IEngineLogic {
   Result<bool, String> openSync(String path);
 
   /// Synchronously flushes the contents of the file to disk.
-  Result<bool, String> flush();
+  Result<bool, String> flushSync();
+
+  /// flushes the contents of the file to disk.
+  Future<Result<bool, String>> flush();
 
   /// ### Close DB
   Result<bool, String> close();

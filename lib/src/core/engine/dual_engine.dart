@@ -145,7 +145,18 @@ class DualEngine extends IEngineLogic
   }
 
   @override
-  Result<bool, String> flush() {
+  Future<Result<bool, String>> flush() async {
+    try {
+      await ctx.writeRaf.flush();
+      eventController.add(FlushToDisk());
+      return Ok(true);
+    } catch (e) {
+      return Err(e.toString());
+    }
+  }
+
+  @override
+  Result<bool, String> flushSync() {
     try {
       ctx.writeRaf.flushSync();
       eventController.add(FlushToDisk());
