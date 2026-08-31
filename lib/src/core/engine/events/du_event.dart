@@ -15,6 +15,8 @@ class Close extends DuEvent {}
 
 class Reload extends DuEvent {}
 
+class ChangePath extends DuEvent {}
+
 class HeaderWrited extends DuEvent {}
 
 /// Synchronously flushes the contents of the file to disk.

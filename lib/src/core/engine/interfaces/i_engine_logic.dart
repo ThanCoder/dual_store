@@ -19,6 +19,9 @@ abstract class IEngineLogic {
   Future<Result<MetaInfo, String>> getMetaInfo(String path);
   Result<MetaInfo, String> getMetaInfoSync(String path);
 
+  Future<Result<bool, String>> changePath(String path);
+  Result<bool, String> changePathSync(String path);
+
   Future<Result<bool, String>> reload();
   Result<bool, String> reloadSync();
 
@@ -63,5 +66,6 @@ abstract class IEngineLogic {
     updateId: eventController.stream.whereType<UpdateId>(),
     addId: eventController.stream.whereType<AddId>(),
     deleteId: eventController.stream.whereType<DeleteId>(),
+    changePath: eventController.stream.whereType<ChangePath>(),
   );
 }

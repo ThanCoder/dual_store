@@ -9,6 +9,7 @@ class DuEventState {
     required this.updateId,
     required this.addId,
     required this.deleteId,
+    required this.changePath,
   });
   final Stream<DuEvent> all;
   final Stream<Open> open;
@@ -17,6 +18,7 @@ class DuEventState {
   final Stream<UpdateId> updateId;
   final Stream<AddId> addId;
   final Stream<DeleteId> deleteId;
+  final Stream<ChangePath> changePath;
 }
 
 extension DuEventStateExt on Stream<DuEvent> {

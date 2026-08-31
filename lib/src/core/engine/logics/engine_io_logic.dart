@@ -7,6 +7,26 @@ import 'package:dual_store/src/result_t.dart';
 
 mixin EngineIoLogic on IEngineLogic {
   @override
+  Future<Result<bool, String>> changePath(String path) async {
+    await close();
+    final res = await open(path);
+    if (res.isOk) {
+      eventController.add(ChangePath());
+    }
+    return res;
+  }
+
+  @override
+  Result<bool, String> changePathSync(String path) {
+    closeSync();
+    final res = openSync(path);
+    if (res.isOk) {
+      eventController.add(ChangePath());
+    }
+    return res;
+  }
+
+  @override
   Future<Result<bool, String>> reload() async {
     await close();
     final res = await open(ctx.readRaf.path);

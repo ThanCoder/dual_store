@@ -61,7 +61,8 @@ void main() async {
   print('lastId: ${st.state.lastId}');
   print('deletedCount: ${st.state.deletedCount}');
   print('deletedSize: ${st.state.deletedSize}');
-  st.close();
+
+  await st.close();
 }
 
 class User extends IDuModel {

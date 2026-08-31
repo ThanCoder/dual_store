@@ -16,6 +16,22 @@ sealed class IDualStore {
   //*************Engine******************** */
   final _eng = DualEngine();
 
+  Future<Result<bool, String>> open(String path) async {
+    return await _eng.open(path);
+  }
+
+  Result<bool, String> openSync(String path) {
+    return _eng.openSync(path);
+  }
+
+  Future<Result<bool, String>> changePath(String path) async {
+    return await _eng.changePath(path);
+  }
+
+  Result<bool, String> changePathSync(String path) {
+    return _eng.changePathSync(path);
+  }
+
   Future<Result<bool, String>> close() async {
     return await _eng.close();
   }
@@ -35,17 +51,7 @@ sealed class IDualStore {
   }
 
   //*************Events******************** */
-  Stream<DuEvent> get _events => _eng.eventController.stream;
-
-  late final DuEventState events = .new(
-    all: _events.whereType<DuEvent>(),
-    open: _events.whereType<Open>(),
-    close: _events.whereType<Close>(),
-    reload: _events.whereType<Reload>(),
-    updateId: _events.whereType<UpdateId>(),
-    addId: _events.whereType<AddId>(),
-    deleteId: _events.whereType<DeleteId>(),
-  );
+  late final DuEventState events = _eng.events;
 
   //*************State******************** */
   late final DuCtxState state = DuCtxState(_eng.ctx);

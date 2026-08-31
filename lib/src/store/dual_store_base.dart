@@ -15,10 +15,6 @@ part 'adapter/i_du_model.dart';
 part 'box/du_box.dart';
 
 class DualStore extends IDualStore {
-  Future<Result<bool, String>> open(String path) async {
-    return await _eng.open(path);
-  }
-
   void registerAdapter<T extends IDuModel>(IDuMetaAdapter<T> adapter) {
     final ad = _adapters[T];
     if (ad == null) {
