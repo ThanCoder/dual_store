@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dual_store/src/core/engine/dual_engine.dart';
-import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/writer/i_content_writer.dart';
 import 'package:dual_store/src/core/models/meta.dart';
 import 'package:dual_store/src/result_t.dart';
