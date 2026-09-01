@@ -6,9 +6,6 @@ repository: https://github.com/ThanCoder/dual_store
 environment:
   sdk: ^3.13.0
 
-# Add regular dependencies here.
-dependencies: # path: ^1.9.0
-
 dev_dependencies:
   lints: ^6.0.0
   test: ^1.25.6

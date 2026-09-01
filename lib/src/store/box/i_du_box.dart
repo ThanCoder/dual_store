@@ -16,7 +16,9 @@ abstract class IDuBox<T extends IDuModel> {
   /// `NoneContentWriter`,
   ///
   /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
-  Future<Result<bool, String>> add(
+  ///
+  /// Return -> `created id`
+  Future<Result<int, String>> add(
     T value, {
 
     /// Supported:

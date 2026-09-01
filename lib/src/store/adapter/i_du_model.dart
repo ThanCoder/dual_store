@@ -37,5 +37,15 @@ abstract class IDuModel {
   IDuModel();
   late Meta _meta;
 
+  late DuBox _box;
+
+  /// db created id
   int get generatedId => _meta.id;
+
+  ///
+  /// supported: `TextRawContentReader`,`TextCompressContentReader`
+  ///
+  Future<Result<R, String>> getContent<R>() async {
+    return await _box.getContent<R>(this);
+  }
 }

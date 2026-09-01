@@ -51,10 +51,12 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       for (var meta in allMeta.values) {
         if (meta.adapterId != _adapter.adapterId) continue;
         if (parentId != null && meta.parentId != parentId) continue;
-
         final reader = _adapter.toMetaReader(meta.metaData);
         final val = _adapter.fromMap(reader.decode());
+        // add private model
         val._meta = meta;
+        val._box = this;
+        // add list
         list.add(val);
       }
       return Ok(list);
@@ -69,23 +71,22 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<bool, String>> deleteById(int id) async {
-    return await _store._eng.removeMetaById(id);
-  }
-
-  @override
-  Future<Result<bool, String>> add(
+  Future<Result<int, String>> add(
     T value, {
     IContentWriter contentWriter = const NoneContentWriter(),
     bool diskFlush = true,
   }) async {
     final newId = _store._eng.ctx.generatedId;
-    return await _store._eng.writeRecord(
+    final res = await _store._eng.writeRecord(
       _adapter.toMetaWriter(value),
       contentWriter,
       id: newId,
       diskFlush: diskFlush,
     );
+    if (res.isErr) {
+      return Err(res.unwrapError());
+    }
+    return Ok(newId);
   }
 
   @override
@@ -103,5 +104,10 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       contentWriter,
       id: id,
     );
+  }
+
+  @override
+  Future<Result<bool, String>> deleteById(int id) async {
+    return await _store._eng.removeMetaById(id);
   }
 }

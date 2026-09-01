@@ -92,4 +92,7 @@ class UserAdapter extends IDuBinaryMetaAdapter<User> {
   Map<String, dynamic> toMap(User value) {
     return value.toMap();
   }
+
+  @override
+  int get adapterId => 0;
 }
