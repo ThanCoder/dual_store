@@ -30,6 +30,10 @@ mixin WriterLogic on IEngineLogic {
     required int id,
   }) {
     try {
+      if (!ctx.opened) {
+        eventController.add(WriteRecordError('Store Need To Open!'));
+        return Ok(false);
+      }
       final headerOffset = ctx.writeRaf.positionSync();
 
       if (metaWriter.size != metaWriter.data.length) {
@@ -126,6 +130,10 @@ mixin WriterLogic on IEngineLogic {
     required int id,
   }) async {
     try {
+      if (!ctx.opened) {
+        eventController.add(WriteRecordError('Store Need To Open!'));
+        return Ok(false);
+      }
       final headerOffset = ctx.writeRaf.positionSync();
 
       if (metaWriter.size != metaWriter.data.length) {

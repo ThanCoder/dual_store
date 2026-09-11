@@ -4,7 +4,7 @@ import 'package:dual_store/src/result_t.dart';
 import '../dual_store_base.dart';
 
 abstract class IDuBox<T extends IDuModel> {
-  Future<Result<List<T>, String>> getAll({int? parentId});
+  Future<List<T>> getAll({int? parentId});
 
   Future<Result<T, String>> getById(int id);
   Future<Result<T, String>> getOne(

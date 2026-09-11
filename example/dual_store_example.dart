@@ -4,52 +4,30 @@ void main() async {
   final st = DualStore();
   st.registerAdapter(UserAdapter());
 
-  st.events.all.listen((event) {
+  st.events.error.all.listen((event) {
     print('event: $event');
   });
 
-  final openRes = await st.open('user.du');
+  // final openRes = await st.open('user.du');
 
-  if (openRes.isErr) {
-    print('open error: ${openRes.unwrapError()}');
-    return;
-  }
+  // if (openRes.isErr) {
+  //   print('open error: ${openRes.unwrapError()}');
+  //   return;
+  // }
+  print('opened: ${st.opened}');
 
   DuBox<User> box = st.getBox<User>();
 
-  // box.getAll()
+  await box.add(
+    .new(name: 'two', age: 20),
+    contentWriter: TextCompressContentWriter('i am compress text'),
+    diskFlush: true,
+  );
 
-  // await box.add(
-  //   .new(name: 'thancoder', age: 30),
-  //   contentWriter: TextRawContentWriter('i am raw content text'),
-  // );
-  //
+  final list = await box.getAll();
 
-  final res = await box.getOne((val) => val.age == 18);
-  if (res.isOk) {
-    print('res: ${res.unwrap()}');
-  }
-
-  // final user = await box.getById(2);
-  // if (user.isErr) {
-  //   print('Err: ${user.unwrapError()}');
-  //   return;
-  // }
-  // print('user: ${user.unwrap()}');
-
-  // await box.update(
-  //   1,
-  //   value: .new(name: 'thancoder', age: 18),
-  //   contentWriter: TextCompressContentWriter('i am compressed text body updated'),
-  // );
-  // await box.deleteById(2);
-  final listRes = await box.getAll();
-  if (listRes.isErr) {
-    print(listRes.unwrapError());
-    return;
-  }
-  for (var user in listRes.unwrap()) {
-    print('ID: ${user.generatedId}- user: $user');
+  for (var user in list) {
+    print('ID: ${user.generatedId} - user: $user');
     final con = await box.getContent<String>(user);
     if (con.isErr) {
       print('content Error: ${con.unwrapError()}');
@@ -94,5 +72,5 @@ class UserAdapter extends IDuBinaryMetaAdapter<User> {
   }
 
   @override
-  int get adapterId => 0;
+  int get adapterId => 1;
 }

@@ -67,5 +67,13 @@ abstract class IEngineLogic {
     addId: eventController.stream.whereType<AddId>(),
     deleteId: eventController.stream.whereType<DeleteId>(),
     changePath: eventController.stream.whereType<ChangePath>(),
+    error: DuEventErrorState(
+      duError: eventController.stream.whereType<DuError>(),
+      writeRecordError: eventController.stream.whereType<WriteRecordError>(),
+      removeMetaError: eventController.stream.whereType<RemoveMetaError>(),
+      all: eventController.stream.where(
+        (e) => e is DuError || e is WriteRecordError || e is RemoveMetaError,
+      ),
+    ),
   );
 }

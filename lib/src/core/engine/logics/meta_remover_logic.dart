@@ -20,6 +20,10 @@ mixin MetaRemoverLogic on IEngineLogic {
     bool diskFlush = true,
   }) async {
     try {
+      if (!ctx.opened) {
+        eventController.add(RemoveMetaError('Store Need To Open!'));
+        return Ok(false);
+      }
       final size = await ctx.writeRaf.length();
 
       if (size == 0) {
@@ -61,6 +65,10 @@ mixin MetaRemoverLogic on IEngineLogic {
   /// Synchronously flushes the contents of the file to disk.
   Result<bool, String> removeMetaByIdSync(int id, {bool diskFlush = true}) {
     try {
+      if (!ctx.opened) {
+        eventController.add(RemoveMetaError('Store Need To Open!'));
+        return Ok(false);
+      }
       final size = ctx.writeRaf.lengthSync();
 
       if (size == 0) {

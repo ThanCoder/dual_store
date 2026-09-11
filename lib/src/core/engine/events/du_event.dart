@@ -36,3 +36,18 @@ class DeleteId extends DuEvent {
   final int id;
   const DeleteId(this.id);
 }
+
+class DuError extends DuEvent {
+  final String message;
+  const DuError(this.message);
+}
+
+class WriteRecordError extends DuEvent {
+  final String message;
+  const WriteRecordError(this.message);
+}
+
+class RemoveMetaError extends DuEvent {
+  final String message;
+  const RemoveMetaError(this.message);
+}

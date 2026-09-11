@@ -30,11 +30,9 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     int? parentId,
   }) async {
     try {
-      final listRes = await getAll(parentId: parentId);
-      if (listRes.isErr) {
-        return Err(listRes.unwrapError());
-      }
-      for (var val in listRes.unwrap()) {
+      final list = await getAll(parentId: parentId);
+
+      for (var val in list) {
         if (onTest(val)) return Ok(val);
       }
       return Err('Not Found!');
@@ -44,9 +42,9 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<List<T>, String>> getAll({int? parentId}) async {
+  Future<List<T>> getAll({int? parentId}) async {
+    final list = <T>[];
     try {
-      final list = <T>[];
       final allMeta = _store._eng.ctx.allMeta;
       for (var meta in allMeta.values) {
         if (meta.adapterId != _adapter.adapterId) continue;
@@ -59,10 +57,12 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
         // add list
         list.add(val);
       }
-      return Ok(list);
     } catch (e) {
-      return Err(e.toString());
+      _store._eng.eventController.add(
+        DuError('[DuBox:getAll]: ${e.toString()}'),
+      );
     }
+    return list;
   }
 
   @override

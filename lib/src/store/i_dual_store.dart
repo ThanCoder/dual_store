@@ -20,6 +20,9 @@ sealed class IDualStore {
     return await _eng.open(path);
   }
 
+  String get path => _eng.ctx.readRaf.path;
+  bool get opened => _eng.ctx.opened;
+
   Result<bool, String> openSync(String path) {
     return _eng.openSync(path);
   }

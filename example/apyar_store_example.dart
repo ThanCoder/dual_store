@@ -19,19 +19,15 @@ Future<void> getAll(Directory dir) async {
 
   final apBox = st.getBox<Apyar>();
   final conBox = st.getBox<ApyarContent>();
-  final listRes = await apBox.getAll();
-  if (listRes.isErr) {
-    print('Error: ${listRes.unwrapError()}');
-    return;
-  }
+  final list = await apBox.getAll();
 
-  for (var ap in listRes.unwrap()) {
+  for (var ap in list) {
     print(ap.title);
     final apCon = await ap.getContent();
     print('ap content: ${apCon.unwrap()}');
 
     final conList = await conBox.getAll(parentId: ap.generatedId);
-    final con = conList.unwrap().first;
+    final con = conList.first;
     // final content = await conBox.getContent<String>(con);
     final content = await con.getContent<String>();
     print('content len: ${content.unwrap().length}');

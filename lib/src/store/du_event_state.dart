@@ -10,6 +10,7 @@ class DuEventState {
     required this.addId,
     required this.deleteId,
     required this.changePath,
+    required this.error,
   });
   final Stream<DuEvent> all;
   final Stream<Open> open;
@@ -19,6 +20,20 @@ class DuEventState {
   final Stream<AddId> addId;
   final Stream<DeleteId> deleteId;
   final Stream<ChangePath> changePath;
+  final DuEventErrorState error;
+}
+
+class DuEventErrorState {
+  const DuEventErrorState({
+    required this.duError,
+    required this.writeRecordError,
+    required this.all,
+    required this.removeMetaError,
+  });
+  final Stream<DuError> duError;
+  final Stream<WriteRecordError> writeRecordError;
+  final Stream<DuEvent> all;
+  final Stream<RemoveMetaError> removeMetaError;
 }
 
 extension DuEventStateExt on Stream<DuEvent> {
