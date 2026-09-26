@@ -9,6 +9,15 @@ class RecordWrited extends DuEvent {
   const RecordWrited(this.meta);
 }
 
+class CompactSuccess extends DuEvent {
+  const CompactSuccess();
+}
+
+class CompactError extends DuEvent {
+  final String message;
+  const CompactError(this.message);
+}
+
 class Open extends DuEvent {}
 
 class Close extends DuEvent {}

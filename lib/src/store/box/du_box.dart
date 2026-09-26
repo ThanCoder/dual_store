@@ -107,7 +107,10 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<bool, String>> deleteById(int id) async {
-    return await _store._eng.removeMetaById(id);
+  Future<Result<bool, String>> deleteById(
+    int id, {
+    bool diskFlush = true,
+  }) async {
+    return await _store._eng.removeMetaById(id, diskFlush: diskFlush);
   }
 }

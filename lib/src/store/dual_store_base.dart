@@ -22,4 +22,8 @@ class DualStore extends IDualStore {
       _boxs[T] = DuBox<T>(adapter: adapter, store: this);
     }
   }
+
+  Future<void> compact() async {
+    await _eng.compact();
+  }
 }

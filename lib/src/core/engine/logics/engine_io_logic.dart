@@ -26,6 +26,11 @@ mixin EngineIoLogic on IEngineLogic {
     return res;
   }
 
+  Future<Result<bool, String>> reloadIfNotOpened() async {
+    if (ctx.opened) return Ok(false);
+    return await reload();
+  }
+
   @override
   Future<Result<bool, String>> reload() async {
     await close();

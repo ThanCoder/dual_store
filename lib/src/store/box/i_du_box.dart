@@ -51,5 +51,5 @@ abstract class IDuBox<T extends IDuModel> {
 
   // Future<void> delete(T value);
   // Future<void> updateById(int id, T value, {String? contentValue});
-  Future<Result<bool, String>> deleteById(int id);
+  Future<Result<bool, String>> deleteById(int id, {bool diskFlush = true});
 }

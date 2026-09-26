@@ -11,6 +11,7 @@ class DuEventState {
     required this.deleteId,
     required this.changePath,
     required this.error,
+    required this.compact,
   });
   final Stream<DuEvent> all;
   final Stream<Open> open;
@@ -21,6 +22,7 @@ class DuEventState {
   final Stream<DeleteId> deleteId;
   final Stream<ChangePath> changePath;
   final DuEventErrorState error;
+  final DuCompactEvent compact;
 }
 
 class DuEventErrorState {
@@ -34,6 +36,13 @@ class DuEventErrorState {
   final Stream<WriteRecordError> writeRecordError;
   final Stream<DuEvent> all;
   final Stream<RemoveMetaError> removeMetaError;
+}
+
+class DuCompactEvent {
+  final Stream<CompactSuccess> success;
+  final Stream<CompactError> error;
+
+  const DuCompactEvent({required this.success, required this.error});
 }
 
 extension DuEventStateExt on Stream<DuEvent> {

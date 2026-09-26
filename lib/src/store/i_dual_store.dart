@@ -35,6 +35,14 @@ sealed class IDualStore {
     return _eng.changePathSync(path);
   }
 
+  Future<Result<bool, String>> reload() async {
+    return await _eng.reload();
+  }
+
+  Future<Result<bool, String>> reloadIfNotOpened() async {
+    return await _eng.reloadIfNotOpened();
+  }
+
   Future<Result<bool, String>> close() async {
     return await _eng.close();
   }

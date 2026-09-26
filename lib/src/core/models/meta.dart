@@ -27,7 +27,7 @@ class Meta {
   final DuContentFlag contentFlag;
   final int contentSize;
   final int contentStartOffset;
-  
+
   final int headerOffset;
   final int totalSize;
   const Meta({
@@ -49,5 +49,37 @@ class Meta {
   @override
   String toString() {
     return 'Meta(flag: $flag, id: $id, parentId: $parentId, adapterId: $adapterId, metaType: $metaType, metaSize: $metaSize contentDataType: $contentDataType, contentFlag: $contentFlag, contentSize: $contentSize, headerOffset: $headerOffset, totalSize: $totalSize)';
+  }
+
+  Meta copyWith({
+    DuFlag? flag,
+    int? id,
+    int? parentId,
+    int? adapterId,
+    DuMetaType? metaType,
+    int? metaSize,
+    Uint8List? metaData,
+    DuContentDataType? contentDataType,
+    DuContentFlag? contentFlag,
+    int? contentSize,
+    int? contentStartOffset,
+    int? headerOffset,
+    int? totalSize,
+  }) {
+    return Meta(
+      flag: flag ?? this.flag,
+      id: id ?? this.id,
+      parentId: parentId ?? this.parentId,
+      adapterId: adapterId ?? this.adapterId,
+      metaType: metaType ?? this.metaType,
+      metaSize: metaSize ?? this.metaSize,
+      metaData: metaData ?? this.metaData,
+      contentDataType: contentDataType ?? this.contentDataType,
+      contentFlag: contentFlag ?? this.contentFlag,
+      contentSize: contentSize ?? this.contentSize,
+      contentStartOffset: contentStartOffset ?? this.contentStartOffset,
+      headerOffset: headerOffset ?? this.headerOffset,
+      totalSize: totalSize ?? this.totalSize,
+    );
   }
 }

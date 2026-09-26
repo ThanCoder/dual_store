@@ -75,5 +75,9 @@ abstract class IEngineLogic {
         (e) => e is DuError || e is WriteRecordError || e is RemoveMetaError,
       ),
     ),
+    compact: DuCompactEvent(
+      success: eventController.stream.whereType<CompactSuccess>(),
+      error: eventController.stream.whereType<CompactError>(),
+    ),
   );
 }
