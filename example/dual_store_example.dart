@@ -47,12 +47,12 @@ void testDB() async {
     print('event: $event');
   });
 
-  await st.open('user.du');
+  final openRes = await st.open('user.du');
 
-  // if (openRes.isErr) {
-  //   print('open error: ${openRes.unwrapError()}');
-  //   return;
-  // }
+  if (openRes.isErr) {
+    print('open error: ${openRes.unwrapError()}');
+    return;
+  }
 
   await st.compact();
 
