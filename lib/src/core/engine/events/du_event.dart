@@ -4,6 +4,31 @@ abstract class DuEvent {
   const DuEvent();
 }
 
+class BoxAdded extends DuEvent {
+  final int id;
+  final int adapterId;
+  const new({required this.id, required this.adapterId});
+}
+
+class BoxUpdated extends DuEvent {
+  final int id;
+  final int adapterId;
+  const new({required this.id, required this.adapterId});
+}
+
+class BoxDeleted extends DuEvent {
+  final int id;
+  final int adapterId;
+  const new({required this.id, required this.adapterId});
+}
+
+class BoxReadMetaError extends DuEvent {
+  final int id;
+  final int adapterId;
+  final String message;
+  const new({required this.id, required this.adapterId, required this.message});
+}
+
 class RecordWrited extends DuEvent {
   final Meta meta;
   const RecordWrited(this.meta);

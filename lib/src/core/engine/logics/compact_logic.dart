@@ -131,6 +131,7 @@ mixin CompactLogic on IEngineLogic {
       ctx.writeRaf = await oldFile.open(mode: .write);
 
       ctx.deletedCount = 0;
+      ctx.deletedSize = 0;
       //event
       eventController.add(CompactSuccess());
       return Ok(true);

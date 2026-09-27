@@ -20,19 +20,24 @@ sealed class IDualStore {
     return await _eng.open(path);
   }
 
+  ///result
+  ///
+  ///opened -> false
+  ///
+  ///it will opened -> true
+  ///
+  ///if error -> error String
+  ///
+  Future<Result<bool, String>> openIfNotOpened(String path) async {
+    if (_eng.ctx.opened) return Ok(false);
+    return await _eng.open(path);
+  }
+
   String get path => _eng.ctx.readRaf.path;
   bool get opened => _eng.ctx.opened;
 
-  Result<bool, String> openSync(String path) {
-    return _eng.openSync(path);
-  }
-
   Future<Result<bool, String>> changePath(String path) async {
     return await _eng.changePath(path);
-  }
-
-  Result<bool, String> changePathSync(String path) {
-    return _eng.changePathSync(path);
   }
 
   Future<Result<bool, String>> reload() async {
@@ -43,22 +48,14 @@ sealed class IDualStore {
     return await _eng.reloadIfNotOpened();
   }
 
+  /// close database
   Future<Result<bool, String>> close() async {
     return await _eng.close();
-  }
-
-  Result<bool, String> closeSync() {
-    return _eng.closeSync();
   }
 
   /// flushes the contents of the file to disk.
   Future<Result<bool, String>> flush() async {
     return await _eng.flush();
-  }
-
-  /// Synchronously flushes the contents of the file to disk.
-  Result<bool, String> flushSync() {
-    return _eng.flushSync();
   }
 
   //*************Events******************** */

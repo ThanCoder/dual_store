@@ -5,7 +5,7 @@ import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/core/models/meta_info.dart';
-import 'package:dual_store/src/store/du_event_state.dart';
+import 'package:dual_store/src/core/engine/events/du_event_state.dart';
 import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 import 'package:dual_store/src/core/models/engine_context.dart';
 import 'package:dual_store/src/result_t.dart';
@@ -17,40 +17,21 @@ abstract class IEngineLogic {
   Result<bool, String> writeHeader(RandomAccessFile writeRaf, DuHeader header);
   //meta
   Future<Result<MetaInfo, String>> getMetaInfo(String path);
-  Result<MetaInfo, String> getMetaInfoSync(String path);
 
   Future<Result<bool, String>> changePath(String path);
-  Result<bool, String> changePathSync(String path);
 
   Future<Result<bool, String>> reload();
-  Result<bool, String> reloadSync();
 
   /// ### Open DB
   Future<Result<bool, String>> open(String path);
-
-  /// ### Open DB Sync
-  Result<bool, String> openSync(String path);
-
-  /// Synchronously flushes the contents of the file to disk.
-  Result<bool, String> flushSync();
 
   /// flushes the contents of the file to disk.
   Future<Result<bool, String>> flush();
 
   /// Close DB
-  Result<bool, String> closeSync();
-
-  /// Close DB
   Future<Result<bool, String>> close();
 
   Future<Result<bool, String>> writeRecord(
-    IMetaWriter metaWriter,
-    IContentWriter contentWriter, {
-    bool diskFlush = true,
-    required int id,
-  });
-
-  Result<bool, String> writeRecordSync(
     IMetaWriter metaWriter,
     IContentWriter contentWriter, {
     bool diskFlush = true,
@@ -78,6 +59,19 @@ abstract class IEngineLogic {
     compact: DuCompactEvent(
       success: eventController.stream.whereType<CompactSuccess>(),
       error: eventController.stream.whereType<CompactError>(),
+    ),
+    box: DuBoxEvent(
+      all: eventController.stream.where(
+        (e) =>
+            e is BoxAdded ||
+            e is BoxUpdated ||
+            e is BoxDeleted ||
+            e is BoxReadMetaError,
+      ),
+      add: eventController.stream.whereType<BoxAdded>(),
+      update: eventController.stream.whereType<BoxUpdated>(),
+      delete: eventController.stream.whereType<BoxDeleted>(),
+      readMetaError: eventController.stream.whereType<BoxReadMetaError>(),
     ),
   );
 }

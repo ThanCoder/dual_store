@@ -1,9 +1,26 @@
 part of '../dual_store_base.dart';
 
+// class BoxEvent {}
+
 class DuBox<T extends IDuModel> implements IDuBox<T> {
   final IDuMetaAdapter<T> _adapter;
   final DualStore _store;
-  const DuBox({required this._adapter, required this._store});
+  DuBox({required this._adapter, required this._store});
+
+  late final _allEvent = _store._eng.events.box.all.where((e) {
+    if (e is BoxAdded && e.adapterId == _adapter.adapterId) return true;
+    if (e is BoxUpdated && e.adapterId == _adapter.adapterId) return true;
+    if (e is BoxDeleted && e.adapterId == _adapter.adapterId) return true;
+    if (e is BoxReadMetaError && e.adapterId == _adapter.adapterId) return true;
+    return false;
+  });
+  late final events = DuBoxEvent(
+    all: _allEvent,
+    add: _allEvent.whereType<BoxAdded>(),
+    update: _allEvent.whereType<BoxUpdated>(),
+    delete: _allEvent.whereType<BoxDeleted>(),
+    readMetaError: _allEvent.whereType<BoxReadMetaError>(),
+  );
 
   @override
   Future<Result<T, String>> getById(int id) async {
@@ -18,6 +35,8 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       final reader = _adapter.toMetaReader(meta.metaData);
       final val = _adapter.fromMap(reader.decode());
       val._meta = meta;
+      val._box = this;
+
       return Ok(val);
     } catch (e) {
       return Err(e.toString());
@@ -25,7 +44,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<T, String>> getOne(
+  Future<Result<T, String>> findOne(
     bool Function(T val) onTest, {
     int? parentId,
   }) async {
@@ -49,13 +68,23 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       for (var meta in allMeta.values) {
         if (meta.adapterId != _adapter.adapterId) continue;
         if (parentId != null && meta.parentId != parentId) continue;
-        final reader = _adapter.toMetaReader(meta.metaData);
-        final val = _adapter.fromMap(reader.decode());
-        // add private model
-        val._meta = meta;
-        val._box = this;
-        // add list
-        list.add(val);
+        try {
+          final reader = _adapter.toMetaReader(meta.metaData);
+          final val = _adapter.fromMap(reader.decode());
+          // add private model
+          val._meta = meta;
+          val._box = this;
+          // add list
+          list.add(val);
+        } catch (e) {
+          _store._eng.eventController.add(
+            BoxReadMetaError(
+              id: meta.id,
+              adapterId: meta.adapterId,
+              message: e.toString(),
+            ),
+          );
+        }
       }
     } catch (e) {
       _store._eng.eventController.add(
@@ -76,17 +105,21 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     IContentWriter contentWriter = const NoneContentWriter(),
     bool diskFlush = true,
   }) async {
-    final newId = _store._eng.ctx.generatedId;
+    final generatedId = _store._eng.ctx.generatedId;
     final res = await _store._eng.writeRecord(
       _adapter.toMetaWriter(value),
       contentWriter,
-      id: newId,
+      id: generatedId,
       diskFlush: diskFlush,
     );
     if (res.isErr) {
       return Err(res.unwrapError());
     }
-    return Ok(newId);
+    _store._eng.eventController.add(
+      BoxAdded(id: generatedId, adapterId: _adapter.adapterId),
+    );
+
+    return Ok(generatedId);
   }
 
   @override
@@ -99,11 +132,17 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     if (remRes.isErr) {
       return Err(remRes.unwrapError());
     }
-    return await _store._eng.writeRecord(
+    final res = await _store._eng.writeRecord(
       _adapter.toMetaWriter(value),
       contentWriter,
       id: id,
     );
+    if (res.isOk) {
+      _store._eng.eventController.add(
+        BoxUpdated(id: id, adapterId: _adapter.adapterId),
+      );
+    }
+    return res;
   }
 
   @override
@@ -111,6 +150,12 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     int id, {
     bool diskFlush = true,
   }) async {
-    return await _store._eng.removeMetaById(id, diskFlush: diskFlush);
+    final res = await _store._eng.removeMetaById(id, diskFlush: diskFlush);
+    if (res.isOk) {
+      _store._eng.eventController.add(
+        BoxDeleted(id: id, adapterId: _adapter.adapterId),
+      );
+    }
+    return res;
   }
 }

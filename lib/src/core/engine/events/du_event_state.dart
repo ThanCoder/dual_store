@@ -12,6 +12,7 @@ class DuEventState {
     required this.changePath,
     required this.error,
     required this.compact,
+    required this.box,
   });
   final Stream<DuEvent> all;
   final Stream<Open> open;
@@ -23,6 +24,7 @@ class DuEventState {
   final Stream<ChangePath> changePath;
   final DuEventErrorState error;
   final DuCompactEvent compact;
+  final DuBoxEvent box;
 }
 
 class DuEventErrorState {
@@ -41,8 +43,23 @@ class DuEventErrorState {
 class DuCompactEvent {
   final Stream<CompactSuccess> success;
   final Stream<CompactError> error;
-
   const DuCompactEvent({required this.success, required this.error});
+}
+
+class DuBoxEvent {
+  final Stream<DuEvent> all;
+  final Stream<BoxAdded> add;
+  final Stream<BoxUpdated> update;
+  final Stream<BoxDeleted> delete;
+  final Stream<BoxReadMetaError> readMetaError;
+
+  const DuBoxEvent({
+    required this.all,
+    required this.add,
+    required this.update,
+    required this.delete,
+    required this.readMetaError,
+  });
 }
 
 extension DuEventStateExt on Stream<DuEvent> {

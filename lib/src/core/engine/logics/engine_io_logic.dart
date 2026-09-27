@@ -16,16 +16,6 @@ mixin EngineIoLogic on IEngineLogic {
     return res;
   }
 
-  @override
-  Result<bool, String> changePathSync(String path) {
-    closeSync();
-    final res = openSync(path);
-    if (res.isOk) {
-      eventController.add(ChangePath());
-    }
-    return res;
-  }
-
   Future<Result<bool, String>> reloadIfNotOpened() async {
     if (ctx.opened) return Ok(false);
     return await reload();
@@ -35,16 +25,6 @@ mixin EngineIoLogic on IEngineLogic {
   Future<Result<bool, String>> reload() async {
     await close();
     final res = await open(ctx.readRaf.path);
-    if (res.isOk) {
-      eventController.add(Reload());
-    }
-    return res;
-  }
-
-  @override
-  Result<bool, String> reloadSync() {
-    closeSync();
-    final res = openSync(ctx.readRaf.path);
     if (res.isOk) {
       eventController.add(Reload());
     }
@@ -94,66 +74,15 @@ mixin EngineIoLogic on IEngineLogic {
   }
 
   @override
-  Result<bool, String> openSync(String path) {
-    try {
-      ctx.opened = false;
-
-      final file = File(path);
-
-      final exists = file.existsSync();
-
-      ctx.writeRaf = file.openSync(mode: FileMode.append);
-      ctx.readRaf = file.openSync(mode: FileMode.read);
-
-      if (!exists || ctx.writeRaf.lengthSync() == 0) {
-        writeHeader(ctx.writeRaf, const DuHeader(magic: 'dust'));
-
-        ctx.writeRaf.flushSync();
-      }
-
-      final headerRes = readHeader(ctx.readRaf);
-      if (headerRes.isErr) {
-        return Err(headerRes.unwrapError());
-      }
-      final metaInfoRes = getMetaInfoSync(path);
-      if (metaInfoRes.isErr) {
-        return Err(metaInfoRes.unwrapError());
-      }
-      final metaInfo = metaInfoRes.unwrap();
-
-      ctx.header = headerRes.unwrap();
-      ctx.allMeta = metaInfo.allMeta;
-      ctx.lastId = metaInfo.lastId;
-      ctx.deletedCount = metaInfo.deletedCount;
-      ctx.deletedSize = metaInfo.deletedSize;
-      ctx.opened = true;
-      eventController.add(Open());
-      return Ok(true);
-    } catch (e) {
-      return Err(e.toString());
-    }
-  }
-
-  @override
   Future<Result<bool, String>> close() async {
     try {
       await ctx.readRaf.close();
       await ctx.writeRaf.close();
       ctx.opened = false;
       eventController.add(Close());
-      return Ok(true);
-    } catch (e) {
-      return Err(e.toString());
-    }
-  }
+      ctx.allMeta.clear();
 
-  @override
-  Result<bool, String> closeSync() {
-    try {
-      ctx.readRaf.closeSync();
-      ctx.writeRaf.closeSync();
-      ctx.opened = false;
-      eventController.add(Close());
+      eventController.close();
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
@@ -164,17 +93,6 @@ mixin EngineIoLogic on IEngineLogic {
   Future<Result<bool, String>> flush() async {
     try {
       await ctx.writeRaf.flush();
-      eventController.add(FlushToDisk());
-      return Ok(true);
-    } catch (e) {
-      return Err(e.toString());
-    }
-  }
-
-  @override
-  Result<bool, String> flushSync() {
-    try {
-      ctx.writeRaf.flushSync();
       eventController.add(FlushToDisk());
       return Ok(true);
     } catch (e) {

@@ -7,7 +7,7 @@ abstract class IDuBox<T extends IDuModel> {
   Future<List<T>> getAll({int? parentId});
 
   Future<Result<T, String>> getById(int id);
-  Future<Result<T, String>> getOne(
+  Future<Result<T, String>> findOne(
     bool Function(T val) onTest, {
     int? parentId,
   });

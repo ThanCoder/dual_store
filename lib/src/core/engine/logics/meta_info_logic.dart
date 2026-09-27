@@ -35,12 +35,6 @@ mixin MetaInfoLogic on IEngineLogic {
       () => _getMetaInfoSync(path),
     );
   }
-
-  /// ### Get Meta Info Sync
-  @override
-  Result<MetaInfo, String> getMetaInfoSync(String path) {
-    return _getMetaInfoSync(path);
-  }
 }
 
 /// Get Meta Info Sync
