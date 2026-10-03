@@ -115,6 +115,7 @@ mixin WriterLogic on IEngineLogic {
 
       // update ctx
       ctx.allMeta[id] = meta;
+      ctx.adapterMeta.putIfAbsent(meta.adapterId, () => {}).add(meta.id);
       eventController.add(AddId(id));
       eventController.add(RecordWrited(meta));
       return Ok(true);

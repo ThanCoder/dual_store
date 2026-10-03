@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dual_store/src/core/engine/dual_engine.dart';
 import 'package:dual_store/src/core/engine/events/du_event.dart';
+import 'package:dual_store/src/core/engine/logics/compact_logic.dart';
 import 'package:dual_store/src/core/engine/writer/i_content_writer.dart';
 import 'package:dual_store/src/core/models/meta.dart';
 import 'package:dual_store/src/result_t.dart';
@@ -56,7 +57,9 @@ class DualStore extends IDualStore {
   }
 
   /// database cleanup
-  Future<Result<bool, String>> compact() async {
-    return await _eng.compact();
+  Future<Result<bool, String>> compact({
+    CompactProgress? onCompactProgress,
+  }) async {
+    return await _eng.compact(onCompactProgress: onCompactProgress);
   }
 }

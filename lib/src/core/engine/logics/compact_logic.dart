@@ -7,9 +7,13 @@ import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
 
+typedef CompactProgress = void Function(int total, int loaded);
+
 mixin CompactLogic on IEngineLogic {
   /// database cleanup
-  Future<Result<bool, String>> compact() async {
+  Future<Result<bool, String>> compact({
+    CompactProgress? onCompactProgress,
+  }) async {
     if (ctx.deletedCount == 0) {
       return Ok(false);
     }
@@ -34,6 +38,12 @@ mixin CompactLogic on IEngineLogic {
       writeHeader(compRaf, const DuHeader(magic: 'dust'));
 
       final buffer = Uint8List(64 * 1024);
+
+      final allTotalSize = ctx.allMeta.values.fold(
+        0,
+        (prev, ele) => prev + ele.totalSize,
+      );
+      int compactProgress = 0;
 
       for (final meta in ctx.allMeta.values) {
         final startPos = meta.headerOffset;
@@ -61,6 +71,9 @@ mixin CompactLogic on IEngineLogic {
           await compRaf.writeFrom(bytes);
 
           remaining -= bytes.length;
+          compactProgress += bytes.length;
+          // progress
+          onCompactProgress?.call(allTotalSize, compactProgress);
         }
 
         // Update metadata to the new position.
@@ -128,119 +141,21 @@ mixin CompactLogic on IEngineLogic {
 
     try {
       ctx.readRaf = await oldFile.open(mode: .read);
-      ctx.writeRaf = await oldFile.open(mode: .write);
+      ctx.writeRaf = await oldFile.open(mode: .append);
 
       ctx.deletedCount = 0;
       ctx.deletedSize = 0;
+      ctx.adapterMeta.clear();
+      for (var meta in ctx.allMeta.values) {
+        ctx.adapterMeta.putIfAbsent(meta.adapterId, () => {}).add(meta.id);
+      }
+
       //event
-      eventController.add(CompactSuccess());
+      eventController.add(const CompactSuccess());
+
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
     }
   }
-
-  // Future<Result<bool, String>> compact() async {
-  //   if (ctx.deletedCount == 0) return Ok(false);
-
-  //   final oldFile = File(ctx.writeRaf.path);
-  //   final compFile = File('${oldFile.path}.cf');
-  //   final backupFile = File('${oldFile.path}.bak');
-
-  //   final compRaf = await compFile.open(mode: .write);
-  //   final readRaf = ctx.readRaf;
-
-  //   try {
-  //     // Skip old header
-  //     await readRaf.setPosition(duHeaderFixedLength);
-
-  //     // Write new header
-  //     writeHeader(compRaf, const DuHeader(magic: 'dust'));
-
-  //     final buffer = Uint8List(64 * 1024);
-
-  //     for (final meta in ctx.allMeta.values) {
-  //       final startPos = meta.headerOffset;
-  //       final totalSize = meta.totalSize;
-
-  //       await readRaf.setPosition(startPos);
-
-  //       var remaining = totalSize;
-
-  //       while (remaining > 0) {
-  //         final readSize = remaining > buffer.length
-  //             ? buffer.length
-  //             : remaining;
-
-  //         final bytes = await readRaf.read(readSize);
-
-  //         if (bytes.isEmpty) {
-  //           throw StateError('Unexpected EOF while compacting at $startPos');
-  //         }
-
-  //         await compRaf.writeFrom(bytes);
-
-  //         remaining -= bytes.length;
-  //       }
-  //     }
-
-  //     // Make sure everything is written.
-  //     await compRaf.flush();
-  //   } catch (e) {
-  //     // If compaction failed, remove incomplete compact file.
-  //     await compRaf.close();
-  //     await compFile.delete().catchError((_) => compFile);
-
-  //     return Err(e.toString());
-  //   }
-
-  //   await compRaf.close();
-
-  //   // ----------------------------------------------------------
-  //   // Replace old file
-  //   // ----------------------------------------------------------
-
-  //   // Close old RAFs before replacing the file.
-  //   await ctx.readRaf.close();
-  //   await ctx.writeRaf.close();
-
-  //   // Remove old backup if it exists.
-  //   if (await backupFile.exists()) {
-  //     await backupFile.delete();
-  //   }
-
-  //   // Rename original -> .bak
-  //   await oldFile.rename(backupFile.path);
-
-  //   try {
-  //     // Rename compacted -> original
-  //     await compFile.rename(oldFile.path);
-
-  //     // Old file is no longer needed.
-  //     await backupFile.delete();
-  //   } catch (e) {
-  //     // Restore original if replacement failed.
-  //     if (await oldFile.exists()) {
-  //       await oldFile.delete();
-  //     }
-
-  //     if (await backupFile.exists()) {
-  //       await backupFile.rename(oldFile.path);
-  //     }
-
-  //     return Err(e.toString());
-  //   }
-
-  //   // ----------------------------------------------------------
-  //   // Re-open RAFs
-  //   // ----------------------------------------------------------
-
-  //   ctx.readRaf = await oldFile.open(mode: .read);
-  //   ctx.writeRaf = await oldFile.open(mode: .write);
-
-  //   // Deleted records are gone now.
-  //   ctx.deletedCount = 0;
-
-  //   return Ok(true);
-  // }
 }

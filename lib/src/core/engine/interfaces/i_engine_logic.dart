@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dual_store/dual_store.dart';
-import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/core/models/meta_info.dart';
 import 'package:dual_store/src/core/engine/events/du_event_state.dart';
@@ -57,21 +56,17 @@ abstract class IEngineLogic {
       ),
     ),
     compact: DuCompactEvent(
+      all: eventController.stream.whereType<CompactEvent>(),
       success: eventController.stream.whereType<CompactSuccess>(),
       error: eventController.stream.whereType<CompactError>(),
     ),
     box: DuBoxEvent(
-      all: eventController.stream.where(
-        (e) =>
-            e is BoxAdded ||
-            e is BoxUpdated ||
-            e is BoxDeleted ||
-            e is BoxReadMetaError,
-      ),
+      all: eventController.stream.whereType<BoxEvent>(),
       add: eventController.stream.whereType<BoxAdded>(),
       update: eventController.stream.whereType<BoxUpdated>(),
       delete: eventController.stream.whereType<BoxDeleted>(),
       readMetaError: eventController.stream.whereType<BoxReadMetaError>(),
+      error: eventController.stream.whereType<BoxError>(),
     ),
   );
 }

@@ -4,43 +4,64 @@ abstract class DuEvent {
   const DuEvent();
 }
 
-class BoxAdded extends DuEvent {
-  final int id;
+abstract class BoxEvent extends DuEvent {
   final int adapterId;
-  const new({required this.id, required this.adapterId});
+  const BoxEvent({required this.adapterId});
 }
 
-class BoxUpdated extends DuEvent {
-  final int id;
-  final int adapterId;
-  const new({required this.id, required this.adapterId});
+abstract class CompactEvent extends DuEvent {
+  const CompactEvent();
 }
 
-class BoxDeleted extends DuEvent {
+//********Box************* */
+class BoxAdded extends BoxEvent {
   final int id;
-  final int adapterId;
-  const new({required this.id, required this.adapterId});
+  const new({required this.id, required super.adapterId});
 }
 
-class BoxReadMetaError extends DuEvent {
+class BoxUpdated extends BoxEvent {
   final int id;
-  final int adapterId;
+  const new({required this.id, required super.adapterId});
+}
+
+class BoxDeleted extends BoxEvent {
+  final int id;
+  const new({required this.id, required super.adapterId});
+}
+
+class BoxError extends BoxEvent {
+  final int id;
   final String message;
-  const new({required this.id, required this.adapterId, required this.message});
+  const new({
+    required this.id,
+    required super.adapterId,
+    required this.message,
+  });
+}
+
+class BoxReadMetaError extends BoxEvent {
+  final int id;
+  final String message;
+  const new({
+    required this.id,
+    required super.adapterId,
+    required this.message,
+  });
+}
+
+//********Compact************* */
+class CompactSuccess extends CompactEvent {
+  const CompactSuccess();
+}
+
+class CompactError extends CompactEvent {
+  final String message;
+  const CompactError(this.message);
 }
 
 class RecordWrited extends DuEvent {
   final Meta meta;
   const RecordWrited(this.meta);
-}
-
-class CompactSuccess extends DuEvent {
-  const CompactSuccess();
-}
-
-class CompactError extends DuEvent {
-  final String message;
-  const CompactError(this.message);
 }
 
 class Open extends DuEvent {}

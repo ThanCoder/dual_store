@@ -18,7 +18,6 @@ class _TodoAppState extends State<TodoApp> {
   @override
   void initState() {
     store.registerAdapter(TodoAdapter());
-    init();
     super.initState();
     store.events.error.all.listen((event) {
       print('[Du Error Event]: $event');
@@ -33,6 +32,11 @@ class _TodoAppState extends State<TodoApp> {
     store.events.open.listen((event) {
       checkCompact();
     });
+    store.events.compact.all.listen((event) {
+      print('compact event');
+      checkCompact();
+    });
+    init();
   }
 
   @override
@@ -48,18 +52,14 @@ class _TodoAppState extends State<TodoApp> {
 
   Future<void> init() async {
     await store.open(path);
-  }
 
-  void checkCompact() {
-    if (store.state.deletedCount > 0) {
-      if (!mounted) return;
-      setState(() {
-        needToCompact = true;
-      });
-    }
+    // store.events.box.
   }
 
   void addTodo() async {
+    // final ad = store.getAdapterOrNull<Todo>();
+    // print(ad?.);
+    // return;
     final text = await showPromptAlertDialog(
       context,
       'Untitled',
@@ -77,8 +77,22 @@ class _TodoAppState extends State<TodoApp> {
     }
   }
 
+  void checkCompact() {
+    if (store.state.deletedCount > 0) {
+      if (!mounted) return;
+      needToCompact = true;
+    } else {
+      needToCompact = false;
+    }
+    setState(() {});
+  }
+
   void compact() async {
-    final res = await store.compact();
+    final res = await store.compact(
+      onCompactProgress: (total, loaded) {
+        print('compress: ${((loaded / total) * 100).toStringAsFixed(2)}%');
+      },
+    );
     if (!mounted) return;
 
     if (res.isErr) {
@@ -93,10 +107,12 @@ class _TodoAppState extends State<TodoApp> {
 
   @override
   Widget build(BuildContext context) {
+    print('adapters : ${store.state.adapterIds}');
     return Scaffold(
       appBar: AppBar(
         title: Text('Todo'),
         actions: [
+          IconButton(onPressed: init, icon: Icon(Icons.refresh_outlined)),
           if (needToCompact)
             FilledButton(onPressed: compact, child: Text('DB Compact')),
         ],
@@ -141,7 +157,10 @@ class _TodoAppState extends State<TodoApp> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(onPressed: addTodo),
+      floatingActionButton: FloatingActionButton(
+        onPressed: addTodo,
+        child: Icon(Icons.add_outlined),
+      ),
     );
   }
 

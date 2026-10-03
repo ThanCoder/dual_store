@@ -1,4 +1,7 @@
-# 0.1.0
+# 0.2.0
+* Fixed `store.compact`
+
+## 0.1.0
 
 * Initial release.
 * Added persistent local database storage.

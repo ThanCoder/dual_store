@@ -5,12 +5,62 @@ sealed class IDualStore {
   final _adapters = <Type, IDuMetaAdapter>{};
   final _boxs = <Type, DuBox>{};
 
+  /// get box model
+  ///
+  /// ```dart
+  /// final box = store.getBox<Todo>();
+  /// print(box);
+  ///
   DuBox<T> getBox<T extends IDuModel>() {
     final box = _boxs[T];
     if (box == null) {
       throw Exception('Need To Register $T Adapter!');
     }
     return box as DuBox<T>;
+  }
+
+  /// get box model nullable
+  ///
+  /// ```dart
+  /// final box = store.getBoxOrNull<Todo>();
+  /// print(box?);
+  ///
+  DuBox<T>? getBoxOrNull<T extends IDuModel>() {
+    final box = _boxs[T];
+    if (box != null) {
+      return box as DuBox<T>;
+    }
+    return null;
+  }
+
+  /// get adapter
+  ///
+  /// ```dart
+  /// final ad = store.getAdapter<Todo>();
+  /// print(ad);
+  ///
+  /// ```
+  IDuMetaAdapter<T> getAdapter<T extends IDuModel>() {
+    final ad = _adapters[T];
+    if (ad == null) {
+      throw Exception('Need To Register $T Adapter!');
+    }
+    return ad as IDuMetaAdapter<T>;
+  }
+
+  /// get adapter nullable
+  ///
+  /// ```dart
+  /// final ad = store.getAdapterOrNull<Todo>();
+  /// print(ad?);
+  ///
+  /// ```
+  IDuMetaAdapter<T>? getAdapterOrNull<T extends IDuModel>() {
+    final ad = _adapters[T];
+    if (ad != null) {
+      return ad as IDuMetaAdapter<T>;
+    }
+    return null;
   }
 
   //*************Engine******************** */

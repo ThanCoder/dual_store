@@ -35,6 +35,7 @@ mixin EngineIoLogic on IEngineLogic {
   Future<Result<bool, String>> open(String path) async {
     try {
       ctx.opened = false;
+      ctx.clearState();
 
       final file = File(path);
 
@@ -65,6 +66,13 @@ mixin EngineIoLogic on IEngineLogic {
       ctx.deletedCount = metaInfo.deletedCount;
       ctx.deletedSize = metaInfo.deletedSize;
       ctx.opened = true;
+      // adapter meta
+      ctx.adapterMeta.clear();
+      for (var meta in metaInfo.allMeta.values) {
+        if (meta.adapterId == -1) continue;
+        ctx.adapterMeta.putIfAbsent(meta.adapterId, () => {}).add(meta.id);
+      }
+
       eventController.add(Open());
 
       return Ok(true);
@@ -81,6 +89,7 @@ mixin EngineIoLogic on IEngineLogic {
       ctx.opened = false;
       eventController.add(Close());
       ctx.allMeta.clear();
+      ctx.adapterMeta.clear();
 
       eventController.close();
       return Ok(true);

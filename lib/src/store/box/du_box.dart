@@ -7,19 +7,16 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   final DualStore _store;
   DuBox({required this._adapter, required this._store});
 
-  late final _allEvent = _store._eng.events.box.all.where((e) {
-    if (e is BoxAdded && e.adapterId == _adapter.adapterId) return true;
-    if (e is BoxUpdated && e.adapterId == _adapter.adapterId) return true;
-    if (e is BoxDeleted && e.adapterId == _adapter.adapterId) return true;
-    if (e is BoxReadMetaError && e.adapterId == _adapter.adapterId) return true;
-    return false;
-  });
+  late final _allEvent = _store._eng.events.box.all.where(
+    (e) => e.adapterId == _adapter.adapterId,
+  );
   late final events = DuBoxEvent(
     all: _allEvent,
     add: _allEvent.whereType<BoxAdded>(),
     update: _allEvent.whereType<BoxUpdated>(),
     delete: _allEvent.whereType<BoxDeleted>(),
     readMetaError: _allEvent.whereType<BoxReadMetaError>(),
+    error: _allEvent.whereType<BoxError>(),
   );
 
   @override
@@ -64,9 +61,14 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   Future<List<T>> getAll({int? parentId}) async {
     final list = <T>[];
     try {
-      final allMeta = _store._eng.ctx.allMeta;
-      for (var meta in allMeta.values) {
-        if (meta.adapterId != _adapter.adapterId) continue;
+      final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
+      if (allMetaIds == null) return [];
+
+      // print('meta: $allMetaIds');
+      for (var metaId in allMetaIds.toList()) {
+        final meta = _store._eng.ctx.allMeta[metaId];
+        if (meta == null) continue;
+
         if (parentId != null && meta.parentId != parentId) continue;
         try {
           final reader = _adapter.toMetaReader(meta.metaData);
@@ -90,13 +92,26 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       _store._eng.eventController.add(
         DuError('[DuBox:getAll]: ${e.toString()}'),
       );
+      _store._eng.eventController.add(
+        BoxError(id: -1, adapterId: _adapter.adapterId, message: e.toString()),
+      );
     }
     return list;
   }
 
   @override
   Future<Result<R, String>> getContent<R>(T value) async {
-    return await _store._eng.readContent<R>(value._meta);
+    final res = await _store._eng.readContent<R>(value._meta);
+    if (res.isErr) {
+      _store._eng.eventController.add(
+        BoxError(
+          id: value.generatedId,
+          adapterId: _adapter.adapterId,
+          message: res.unwrapError(),
+        ),
+      );
+    }
+    return res;
   }
 
   @override
@@ -113,6 +128,13 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       diskFlush: diskFlush,
     );
     if (res.isErr) {
+      _store._eng.eventController.add(
+        BoxError(
+          id: generatedId,
+          adapterId: _adapter.adapterId,
+          message: res.unwrapError(),
+        ),
+      );
       return Err(res.unwrapError());
     }
     _store._eng.eventController.add(
@@ -142,6 +164,15 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
         BoxUpdated(id: id, adapterId: _adapter.adapterId),
       );
     }
+    if (res.isErr) {
+      _store._eng.eventController.add(
+        BoxError(
+          id: value.generatedId,
+          adapterId: _adapter.adapterId,
+          message: res.unwrapError(),
+        ),
+      );
+    }
     return res;
   }
 
@@ -154,6 +185,15 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     if (res.isOk) {
       _store._eng.eventController.add(
         BoxDeleted(id: id, adapterId: _adapter.adapterId),
+      );
+    }
+    if (res.isErr) {
+      _store._eng.eventController.add(
+        BoxError(
+          id: id,
+          adapterId: _adapter.adapterId,
+          message: res.unwrapError(),
+        ),
       );
     }
     return res;

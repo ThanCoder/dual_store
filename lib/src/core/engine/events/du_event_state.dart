@@ -41,16 +41,22 @@ class DuEventErrorState {
 }
 
 class DuCompactEvent {
+  final Stream<CompactEvent> all;
   final Stream<CompactSuccess> success;
   final Stream<CompactError> error;
-  const DuCompactEvent({required this.success, required this.error});
+  const DuCompactEvent({
+    required this.all,
+    required this.success,
+    required this.error,
+  });
 }
 
 class DuBoxEvent {
-  final Stream<DuEvent> all;
+  final Stream<BoxEvent> all;
   final Stream<BoxAdded> add;
   final Stream<BoxUpdated> update;
   final Stream<BoxDeleted> delete;
+  final Stream<BoxError> error;
   final Stream<BoxReadMetaError> readMetaError;
 
   const DuBoxEvent({
@@ -59,6 +65,7 @@ class DuBoxEvent {
     required this.update,
     required this.delete,
     required this.readMetaError,
+    required this.error,
   });
 }
 

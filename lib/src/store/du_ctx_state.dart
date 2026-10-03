@@ -9,4 +9,6 @@ class DuCtxState {
   int get deletedSize => _ctx.deletedSize;
   int get lastId => _ctx.lastId;
   DuHeader get header => _ctx.header;
+  List<int> get adapterIds => _ctx.adapterMeta.keys.toList();
+  bool get opened => _ctx.opened;
 }

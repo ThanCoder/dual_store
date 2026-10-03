@@ -13,6 +13,7 @@ class EngineContext {
   int deletedCount;
   int deletedSize;
   Map<int, Meta> allMeta = {};
+  Map<int, Set<int>> adapterMeta = {};
   EngineContext({this.lastId = 0, this.deletedCount = 0, this.deletedSize = 0});
 
   bool opened = false;
@@ -22,8 +23,10 @@ class EngineContext {
     return lastId;
   }
 
-  @override
-  String toString() {
-    return 'EngineContext(header: $header, lastId: $lastId, deletedCount: $deletedCount, deletedSize: $deletedSize)';
+  void clearState() {
+    deletedCount = 0;
+    deletedSize = 0;
+    allMeta.clear();
+    adapterMeta.clear();
   }
 }
