@@ -5,6 +5,7 @@ import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
 
+// ignore: public_member_api_docs
 mixin EngineIoLogic on IEngineLogic {
   @override
   Future<Result<bool, String>> changePath(String path) async {
@@ -16,6 +17,7 @@ mixin EngineIoLogic on IEngineLogic {
     return res;
   }
 
+  /// reload if not open
   Future<Result<bool, String>> reloadIfNotOpened() async {
     if (ctx.opened) return Ok(false);
     return await reload();

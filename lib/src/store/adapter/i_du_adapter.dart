@@ -4,14 +4,18 @@ import 'package:dual_store/src/core/engine/reader/i_meta_reader.dart';
 import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 import 'package:dual_store/src/store/dual_store_base.dart';
 
+/// meta adapter
 sealed class IDuMetaAdapter<T extends IDuModel> {
   /// 1-255
   int get adapterId;
 
-  ///
+  /// parent id
   int parentId(T value) => 0;
 
+  /// map to type
   T fromMap(Map<String, dynamic> map);
+
+  /// type to map
   Map<String, dynamic> toMap(T value);
 
   ///return JsonMetaWriter(toMap(value));

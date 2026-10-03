@@ -35,6 +35,7 @@ part of '../dual_store_base.dart';
 /// ```
 
 abstract class IDuModel {
+  // ignore: public_member_api_docs
   IDuModel();
 
   late Meta _meta;

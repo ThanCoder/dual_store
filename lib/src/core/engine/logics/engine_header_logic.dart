@@ -5,7 +5,7 @@ import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
-
+/// du header fixed len
 const int duHeaderLength = 6;
 
 /// [magic(4),version(1),dbID(1)]

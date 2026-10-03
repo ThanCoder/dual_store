@@ -3,6 +3,7 @@ import 'package:dual_store/src/core/engine/reader/i_content_reader.dart';
 import 'package:dual_store/src/core/models/meta.dart';
 import 'package:dual_store/src/result_t.dart';
 
+/// content logic
 mixin ContentReaderLogic on IEngineLogic {
   ///
   /// supported: `TextRawContentReader`,`TextCompressContentReader`

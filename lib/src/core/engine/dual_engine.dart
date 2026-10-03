@@ -13,6 +13,7 @@ import 'package:dual_store/src/core/engine/logics/writer_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
 
+// ignore: public_member_api_docs
 class DualEngine extends IEngineLogic
     with
         EngineHeaderLogic,
@@ -22,6 +23,7 @@ class DualEngine extends IEngineLogic
         MetaRemoverLogic,
         ContentReaderLogic,
         CompactLogic {
+  // ignore: public_member_api_docs
   DualEngine();
 
   @override

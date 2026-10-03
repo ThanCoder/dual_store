@@ -4,8 +4,10 @@ import 'dart:io';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
 
+/// du header size
 const int duHeaderFixedLength = 6;
 
+// ignore: public_member_api_docs
 class DuHeaderIo {
   /// Reader Header
   static Future<Result<DuHeader, String>> getHeader(
@@ -28,6 +30,7 @@ class DuHeaderIo {
     }
   }
 
+  /// header sync
   static Result<DuHeader, String> getHeaderSync(RandomAccessFile raf) {
     try {
       raf.setPositionSync(0);

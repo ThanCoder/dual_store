@@ -14,7 +14,7 @@ import 'package:dual_store/src/core/engine/events/du_event_state.dart';
 part 'i_dual_store.dart';
 part 'adapter/i_du_model.dart';
 part 'box/du_box.dart';
-
+/// du store
 class DualStore extends IDualStore {
   /// register adapter if not exists!
   ///

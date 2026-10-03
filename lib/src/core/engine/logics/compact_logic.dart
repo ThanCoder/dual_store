@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -7,6 +9,7 @@ import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
 
+/// compact progress func
 typedef CompactProgress = void Function(int total, int loaded);
 
 mixin CompactLogic on IEngineLogic {

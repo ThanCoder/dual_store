@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 enum DuFlag {
   deleted(0),
   active(1);

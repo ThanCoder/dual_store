@@ -9,16 +9,24 @@ import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 import 'package:dual_store/src/core/models/engine_context.dart';
 import 'package:dual_store/src/result_t.dart';
 
+// ignore: public_member_api_docs
 abstract class IEngineLogic {
+  /// state
   EngineContext get ctx;
-  // header
+
+  /// header
   Result<DuHeader, String> readHeader(RandomAccessFile readRaf);
+
+  /// write header
   Result<bool, String> writeHeader(RandomAccessFile writeRaf, DuHeader header);
-  //meta
+
+  ///meta
   Future<Result<MetaInfo, String>> getMetaInfo(String path);
 
+  /// db change path
   Future<Result<bool, String>> changePath(String path);
 
+  ///db reload
   Future<Result<bool, String>> reload();
 
   /// ### Open DB
@@ -30,6 +38,7 @@ abstract class IEngineLogic {
   /// Close DB
   Future<Result<bool, String>> close();
 
+  ///write
   Future<Result<bool, String>> writeRecord(
     IMetaWriter metaWriter,
     IContentWriter contentWriter, {
@@ -37,7 +46,10 @@ abstract class IEngineLogic {
     required int id,
   });
 
+  ///all event controller
   final eventController = StreamController<DuEvent>.broadcast();
+
+  /// all event state
   late final DuEventState events = DuEventState(
     all: eventController.stream,
     open: eventController.stream.whereType<Open>(),
