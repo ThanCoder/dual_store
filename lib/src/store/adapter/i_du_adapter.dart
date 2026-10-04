@@ -5,7 +5,7 @@ import 'package:dual_store/src/core/engine/writer/i_meta_writer.dart';
 import 'package:dual_store/src/store/dual_store_base.dart';
 
 /// meta adapter
-sealed class IDuMetaAdapter<T extends IDuModel> {
+sealed class IDuMetaAdapter<T extends IIDuModel> {
   /// 1-255
   int get adapterId;
 
@@ -58,7 +58,7 @@ sealed class IDuMetaAdapter<T extends IDuModel> {
 /// }
 ///
 /// ```
-abstract class IDuJsonMetaAdapter<T extends IDuModel>
+abstract class IDuJsonMetaAdapter<T extends IIDuModel>
     extends IDuMetaAdapter<T> {
   @override
   IMetaWriter toMetaWriter(T value) {
@@ -108,7 +108,7 @@ abstract class IDuJsonMetaAdapter<T extends IDuModel>
 /// }
 ///
 /// ```
-abstract class IDuBinaryMetaAdapter<T extends IDuModel>
+abstract class IDuBinaryMetaAdapter<T extends IIDuModel>
     extends IDuMetaAdapter<T> {
   @override
   IMetaWriter toMetaWriter(T value) {

@@ -13,6 +13,7 @@ mixin ContentReaderLogic on IEngineLogic {
       if (meta.contentDataType == .none || meta.contentFlag == .none) {
         return Ok<String, String>('') as Result<R, String>;
       }
+      // text
       if (meta.contentDataType == .text) {
         if (meta.contentFlag == .raw) {
           return await readContentExact(TextRawContentReader(meta))
@@ -23,7 +24,17 @@ mixin ContentReaderLogic on IEngineLogic {
               as Result<R, String>;
         }
       }
-      // if (meta.contentDataType == .json) {}
+      // bytes
+      if (meta.contentDataType == .bytes) {
+        if (meta.contentFlag == .raw) {
+          return await readContentExact(BytesRawContentReader(meta))
+              as Result<R, String>;
+        }
+        if (meta.contentFlag == .compressed) {
+          return await readContentExact(BytesCompressContentReader(meta))
+              as Result<R, String>;
+        }
+      }
 
       return Err(
         'Not Supported!: contentDataType: ${meta.contentDataType} - contentFlag: ${meta.contentFlag}',
@@ -41,7 +52,7 @@ mixin ContentReaderLogic on IEngineLogic {
       if (meta.contentDataType == .none || meta.contentFlag == .none) {
         return Ok<String, String>('') as Result<R, String>;
       }
-
+      //text
       if (meta.contentDataType == .text) {
         if (meta.contentFlag == .raw) {
           return readContentExactSync(TextRawContentReader(meta))
@@ -50,6 +61,17 @@ mixin ContentReaderLogic on IEngineLogic {
         if (meta.contentFlag == .compressed) {
           return readContentExactSync(TextCompressContentReader(meta))
               as Result<R, String>;
+        }
+        // bytes
+        if (meta.contentDataType == .bytes) {
+          if (meta.contentFlag == .raw) {
+            return readContentExactSync(BytesRawContentReader(meta))
+                as Result<R, String>;
+          }
+          if (meta.contentFlag == .compressed) {
+            return readContentExactSync(BytesCompressContentReader(meta))
+                as Result<R, String>;
+          }
         }
       }
       // if (meta.contentDataType == .json) {}

@@ -6,9 +6,10 @@ part of '../dual_store_base.dart';
 
 class DuBox<T extends IDuModel> implements IDuBox<T> {
   final IDuMetaAdapter<T> _adapter;
-  final DualStore _store;
+  final IDualStore _store;
   DuBox({required this._adapter, required this._store});
 
+  //*********Events******************/
   late final _allEvent = _store._eng.events.box.all.where(
     (e) => e.adapterId == _adapter.adapterId,
   );
@@ -21,6 +22,67 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     error: _allEvent.whereType<BoxError>(),
   );
 
+  //*********stream******************/
+  @override
+  Stream<T> streamAll({int? parentId}) async* {
+    try {
+      final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
+      if (allMetaIds == null) return;
+
+      for (var metaId in allMetaIds.toList()) {
+        final meta = _store._eng.ctx.allMeta[metaId];
+        if (meta == null) continue;
+
+        if (parentId != null && meta.parentId != parentId) continue;
+        try {
+          final reader = _adapter.toMetaReader(meta.metaData);
+          final val = _adapter.fromMap(reader.decode());
+          // add private model
+          val._meta = meta;
+          val._box = this;
+          // add list
+          yield val;
+        } catch (e) {
+          _store._eng.eventController.add(
+            BoxReadMetaError(
+              id: meta.id,
+              adapterId: meta.adapterId,
+              message: e.toString(),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      _store._eng.eventController.add(
+        DuError('[DuBox:getAll]: ${e.toString()}'),
+      );
+      _store._eng.eventController.add(
+        BoxError(id: -1, adapterId: _adapter.adapterId, message: e.toString()),
+      );
+    }
+  }
+
+  @override
+  Stream<T?> streamFindOne(bool Function(T val) test, {int? parentId}) async* {
+    await for (var meta in streamAll(parentId: parentId)) {
+      if (test(meta)) {
+        yield meta;
+        return;
+      }
+    }
+    yield null;
+  }
+
+  @override
+  Stream<T> streamFind(bool Function(T val) test, {int? parentId}) async* {
+    await for (var meta in streamAll(parentId: parentId)) {
+      if (test(meta)) {
+        yield meta;
+      }
+    }
+  }
+
+  //*********normal******************/
   @override
   Future<Result<T, String>> getById(int id) async {
     try {
@@ -43,20 +105,26 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<T, String>> findOne(
-    bool Function(T val) onTest, {
-    int? parentId,
-  }) async {
-    try {
-      final list = await getAll(parentId: parentId);
+  Future<T?> findOne(bool Function(T val) onTest, {int? parentId}) async {
+    final list = await getAll(parentId: parentId);
 
-      for (var val in list) {
-        if (onTest(val)) return Ok(val);
-      }
-      return Err('Not Found!');
-    } catch (e) {
-      return Err(e.toString());
+    for (var val in list) {
+      if (onTest(val)) return val;
     }
+    return null;
+  }
+
+  @override
+  Future<List<T>> find(bool Function(T val) onTest, {int? parentId}) async {
+    List<T> res = [];
+    final list = await getAll(parentId: parentId);
+
+    for (var val in list) {
+      if (onTest(val)) {
+        res.add(val);
+      }
+    }
+    return res;
   }
 
   @override
@@ -66,7 +134,6 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
       if (allMetaIds == null) return [];
 
-      // print('meta: $allMetaIds');
       for (var metaId in allMetaIds.toList()) {
         final meta = _store._eng.ctx.allMeta[metaId];
         if (meta == null) continue;

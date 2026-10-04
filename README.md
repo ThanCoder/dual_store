@@ -4,11 +4,13 @@
 
 It provides typed boxes, model adapters, persistent storage, database events, database state tracking, file management, and database compaction.
 
+### Example List
 
 * [x] [Dart Example](#dart-example)
 * [x] [DualStore Todo Example](#dualstore-todo-example)
 * [x] [Full Flutter App Example](#flutter-app-example)
 * [x] [Screenshot](#screenshot)
+* [x] [Image Box Example](#image-box-example)
 
 
 ## Features
@@ -436,6 +438,36 @@ This makes it possible for an application to decide when database compaction sho
 
 ---
 
+### image box example
+
+* [x] [Go Example List](#example-list)
+
+```dart
+  final ad = st.getImageFileAdapter;
+  final imgBox = st.getImageBox;
+
+  await imgBox.add(
+    .fromFile(
+      File(
+        '/home/thancoder/Pictures/ChatGPT Image Sep 19, 2026, 02_12_12 PM.png',
+      ),
+    ),
+  );
+  await imgBox.deleteById(1);
+
+  for (var f in await imgBox.getAll()) {
+    print(f);
+    print('id: ${f.generatedId}');
+    final d = await f.imageData;
+    if (d.isOk) {
+      print('data: ${d.unwrap().length}');
+    }
+    if (d.isErr) {
+      print('image error: ${d.unwrapError()}');
+    }
+  }
+```
+
 # Result API
 
 Most database operations use:
@@ -643,12 +675,18 @@ Close Database
 ---
 
 ### Screenshot
+
+* [x] [Go Example List](#example-list)
+
+
 <p align="center">
   <img src="https://github.com/ThanCoder/dual_store/blob/main/screenshots/d-1.png?raw=true"
      /></p>
 
 
 ## DualStore Todo Example
+
+* [x] [Go Example List](#example-list)
 
 A simple Flutter Todo application demonstrating how to use **DualStore** for local persistent storage.
 
@@ -1126,6 +1164,8 @@ Compact Database
 Close Store
 ```
 ## Dart Example
+* [x] [Go Example List](#example-list)
+
 ```dart
  final st = DualStore();
   st.registerAdapter(UserAdapter());
@@ -1172,8 +1212,11 @@ Close Store
   await st.close();
 ```
 ## Flutter App Example
-```dart
 
+* [x] [Go Example List](#example-list)
+
+
+```dart
 class TodoApp extends StatefulWidget {
   const new({super.key});
 

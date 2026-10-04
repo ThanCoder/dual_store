@@ -18,8 +18,13 @@ abstract class IContentWriter {
   DuContentFlag get contentFlag;
   DuContentDataType get dataType;
   int get size;
-  // written bytes
+
+  /// written bytes
+  /// return data length
   Future<int> writeTo(RandomAccessFile raf);
+
+  /// written bytes
+  /// return data length
   int writeToSync(RandomAccessFile raf);
 }
 
@@ -39,23 +44,6 @@ class NoneContentWriter implements IContentWriter {
   @override
   int writeToSync(RandomAccessFile raf) => 0;
 }
-
-// class AutoUpdateContentWriter implements IContentWriter {
-//   const AutoUpdateContentWriter();
-//   @override
-//   DuContentFlag get contentFlag => DuContentFlag.none;
-
-//   @override
-//   DuContentDataType get dataType => DuContentDataType.none;
-
-//   @override
-//   int get size => 0;
-
-//   @override
-//   Future<int> writeTo(RandomAccessFile raf) async => 0;
-//   @override
-//   int writeToSync(RandomAccessFile raf) => 0;
-// }
 
 class TextRawContentWriter implements IContentWriter {
   final Uint8List _data;
@@ -121,6 +109,60 @@ class TextCompressContentWriter implements IContentWriter {
 
   @override
   DuContentDataType get dataType => DuContentDataType.text;
+
+  @override
+  int get size => _data.length;
+
+  @override
+  Future<int> writeTo(RandomAccessFile raf) async {
+    await raf.writeFrom(_data);
+    return _data.length;
+  }
+
+  @override
+  int writeToSync(RandomAccessFile raf) {
+    raf.writeFromSync(_data);
+    return _data.length;
+  }
+}
+
+//*******************File Writer************************** */
+class BytesRawContentWriter implements IContentWriter {
+  final Uint8List _bytes;
+
+  const BytesRawContentWriter({required this._bytes});
+  @override
+  DuContentFlag get contentFlag => .raw;
+
+  @override
+  DuContentDataType get dataType => .bytes;
+
+  @override
+  int get size => _bytes.length;
+
+  @override
+  Future<int> writeTo(RandomAccessFile raf) async {
+    await raf.writeFrom(_bytes);
+    return size;
+  }
+
+  @override
+  int writeToSync(RandomAccessFile raf) {
+    raf.writeFromSync(_bytes);
+    return size;
+  }
+}
+
+class BytesCompressContentWriter implements IContentWriter {
+  final Uint8List _data;
+  BytesCompressContentWriter(Uint8List bytes)
+    : _data = Uint8List.fromList(gzip.encode(bytes));
+
+  @override
+  DuContentFlag get contentFlag => DuContentFlag.compressed;
+
+  @override
+  DuContentDataType get dataType => DuContentDataType.bytes;
 
   @override
   int get size => _data.length;

@@ -6,13 +6,26 @@ import 'package:dual_store/src/result_t.dart';
 import '../dual_store_base.dart';
 
 abstract class IDuBox<T extends IDuModel> {
+  /// Streams all models one by one.
+  Stream<T> streamAll({int? parentId});
+
+  /// Streams all models that match the given test.
+  Stream<T> streamFind(bool Function(T val) test, {int? parentId});
+
+  /// Streams the first matching model, then closes the stream.
+  Stream<T?> streamFindOne(bool Function(T val) test, {int? parentId});
+
+  /// Returns all models.
   Future<List<T>> getAll({int? parentId});
 
+  /// Returns a model by id.
   Future<Result<T, String>> getById(int id);
-  Future<Result<T, String>> findOne(
-    bool Function(T val) onTest, {
-    int? parentId,
-  });
+
+  /// Returns the first matching model.
+  Future<T?> findOne(bool Function(T value) test, {int? parentId});
+
+  /// Returns all matching models.
+  Future<List<T>> find(bool Function(T value) test, {int? parentId});
 
   /// Supported:
   /// `NoneContentWriter`,

@@ -1,3 +1,6 @@
+# 0.3.0
+* Added `store.getImageBox`
+
 # 0.2.0
 * Fixed `store.compact`
 

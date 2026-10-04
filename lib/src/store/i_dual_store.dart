@@ -6,6 +6,7 @@ sealed class IDualStore {
   //*************Adapter******************** */
   final _adapters = <Type, IDuMetaAdapter>{};
   final _boxs = <Type, DuBox>{};
+  final _buildinBoxs = <Type, dynamic>{};
 
   /// get box model
   ///

@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dual_store/src/core/engine/interfaces/types.dart';
 import 'package:dual_store/src/core/models/meta.dart';
@@ -85,5 +86,53 @@ class TextCompressContentReader implements IContentReader<String> {
   String readSync(RandomAccessFile readRaf) {
     final data = readRaf.readSync(meta.contentSize);
     return utf8.decode(gzip.decode(data));
+  }
+}
+
+//***********Bytes reader*********************** */
+class BytesRawContentReader implements IContentReader<Uint8List> {
+  @override
+  final Meta meta;
+  const BytesRawContentReader(this.meta);
+
+  @override
+  DuContentDataType get contentDataType => .bytes;
+
+  @override
+  DuContentFlag get contentFlag => .raw;
+
+  @override
+  Future<Uint8List> read(RandomAccessFile readRaf) async {
+    return await readRaf.read(meta.contentSize);
+  }
+
+  @override
+  Uint8List readSync(RandomAccessFile readRaf) {
+    return readRaf.readSync(meta.contentSize);
+  }
+}
+
+class BytesCompressContentReader implements IContentReader<Uint8List> {
+  @override
+  final Meta meta;
+
+  const BytesCompressContentReader(this.meta);
+
+  @override
+  DuContentDataType get contentDataType => .bytes;
+
+  @override
+  DuContentFlag get contentFlag => .compressed;
+
+  @override
+  Future<Uint8List> read(RandomAccessFile readRaf) async {
+    final data = await readRaf.read(meta.contentSize);
+    return Uint8List.fromList(gzip.decode(data));
+  }
+
+  @override
+  Uint8List readSync(RandomAccessFile readRaf) {
+    final data = readRaf.readSync(meta.contentSize);
+    return Uint8List.fromList(gzip.decode(data));
   }
 }

@@ -54,7 +54,33 @@ void testDB() async {
     return;
   }
 
-  await st.compact();
+  // await st.compact();
+  final ad = st.getImageFileAdapter;
+  final imgBox = st.getImageBox;
+
+  // await imgBox.add(
+  //   .fromFile(
+  //     File(
+  //       '/home/thancoder/Pictures/ChatGPT Image Sep 19, 2026, 02_12_12 PM.png',
+  //     ),
+  //   ),
+  // );
+  await imgBox.deleteById(1);
+
+  for (var f in await imgBox.getAll()) {
+    print(f);
+    print('id: ${f.generatedId}');
+    final d = await f.imageData;
+    if (d.isOk) {
+      print('data: ${d.unwrap().length}');
+    }
+    if (d.isErr) {
+      print('image error: ${d.unwrapError()}');
+    }
+  }
+
+  print(ad.adapterId);
+  // imgBox.add(.fromFile(file));
 
   DuBox<User> box = st.getBox<User>();
 
