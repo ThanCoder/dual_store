@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/binary_en_de/binary_storage_decoder.dart';
 import 'package:dual_store/src/core/binary_en_de/binary_storage_encoder.dart';
@@ -40,23 +42,24 @@ void testEncoder() async {
 }
 
 void testDB() async {
-  final st = DualStore();
-  st.registerAdapter(UserAdapter());
+  final store = DualStore();
+  store.registerAdapter(UserAdapter());
 
-  st.events.error.all.listen((event) {
+  store.events.error.all.listen((event) {
     print('event: $event');
   });
 
-  final openRes = await st.open('user.du');
+  final openRes = await store.open('user.du');
 
   if (openRes.isErr) {
     print('open error: ${openRes.unwrapError()}');
     return;
   }
+ 
 
-  // await st.compact();
-  final ad = st.getImageFileAdapter;
-  final imgBox = st.getImageBox;
+  // await store.compact();
+  final ad = store.getImageFileAdapter;
+  final imgBox = store.getImageBox;
 
   // await imgBox.add(
   //   .fromFile(
@@ -82,7 +85,7 @@ void testDB() async {
   print(ad.adapterId);
   // imgBox.add(.fromFile(file));
 
-  DuBox<User> box = st.getBox<User>();
+  DuBox<User> box = store.getBox<User>();
 
   // await box.add(
   //   .new(name: 'two', age: 20, tags: ['one', 'two', 'three']),
@@ -103,12 +106,12 @@ void testDB() async {
     }
     print('content: ${con.unwrap()}');
   }
-  print('opened: ${st.opened}');
-  print('lastId: ${st.state.lastId}');
-  print('deletedCount: ${st.state.deletedCount}');
-  print('deletedSize: ${st.state.deletedSize}');
+  print('opened: ${store.opened}');
+  print('lastId: ${store.state.lastId}');
+  print('deletedCount: ${store.state.deletedCount}');
+  print('deletedSize: ${store.state.deletedSize}');
 
-  await st.close();
+  await store.close();
 }
 
 class User extends IDuModel {
@@ -135,6 +138,9 @@ class User extends IDuModel {
 
 class UserAdapter extends IDuBinaryMetaAdapter<User> {
   @override
+  int get adapterId => 1;
+
+  @override
   User fromMap(Map<String, dynamic> map) {
     return User.fromJson(map);
   }
@@ -143,7 +149,4 @@ class UserAdapter extends IDuBinaryMetaAdapter<User> {
   Map<String, dynamic> toMap(User value) {
     return value.toJson();
   }
-
-  @override
-  int get adapterId => 1;
 }

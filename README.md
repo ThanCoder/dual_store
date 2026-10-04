@@ -11,6 +11,8 @@ It provides typed boxes, model adapters, persistent storage, database events, da
 * [x] [Full Flutter App Example](#flutter-app-example)
 * [x] [Screenshot](#screenshot)
 * [x] [Image Box Example](#image-box-example)
+* [x] [Custom Adapter](#custom-adapter)
+* [x] [Custom Box](#custom-box)
 
 
 ## Features
@@ -466,6 +468,63 @@ This makes it possible for an application to decide when database compaction sho
       print('image error: ${d.unwrapError()}');
     }
   }
+```
+
+### Custom Adapter
+
+* [x] [Go Example List](#example-list)
+
+```dart
+class User extends IDuModel {
+  final String name;
+  final int age;
+  final List<String> tags;
+  User({required this.name, required this.age, required this.tags});
+
+  @override
+  String toString() => '''User(name: $name, age: $age, tags: $tags)''';
+
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'age': age, 'tags': tags};
+  }
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      name: json['name'],
+      age: json['age'],
+      tags: List<String>.from(json['tags']),
+    );
+  }
+}
+
+class UserAdapter extends IDuBinaryMetaAdapter<User> {
+  @override
+  int get adapterId => 1;
+
+  @override
+  User fromMap(Map<String, dynamic> map) {
+    return User.fromJson(map);
+  }
+
+  @override
+  Map<String, dynamic> toMap(User value) {
+    return value.toJson();
+  }
+}
+```
+
+### Custom Box
+
+* [x] [Go Example List](#example-list)
+```dart
+final userBox = store.getBox<User>();
+userBox.getAll();
+userBox.add([User]);
+userBox.update(id, [User]);
+userBox.deleteById(id);
+userBox.events.all.listen((event) {
+  print('user event: $event');
+});
 ```
 
 # Result API
