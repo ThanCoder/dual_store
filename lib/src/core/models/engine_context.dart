@@ -16,6 +16,7 @@ class EngineContext {
   Map<int, Set<int>> adapterMeta = {};
   EngineContext({this.lastId = 0, this.deletedCount = 0, this.deletedSize = 0});
 
+  bool onceInit = false;
   bool opened = false;
 
   int get generatedId {

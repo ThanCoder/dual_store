@@ -19,12 +19,14 @@ mixin EngineIoLogic on IEngineLogic {
 
   /// reload if not open
   Future<Result<bool, String>> reloadIfNotOpened() async {
+    if (!ctx.onceInit) return Ok(false);
     if (ctx.opened) return Ok(false);
     return await reload();
   }
 
   @override
   Future<Result<bool, String>> reload() async {
+    if (!ctx.onceInit) return Ok(false);
     await close();
     final res = await open(ctx.readRaf.path);
     if (res.isOk) {
@@ -67,6 +69,7 @@ mixin EngineIoLogic on IEngineLogic {
       ctx.lastId = metaInfo.lastId;
       ctx.deletedCount = metaInfo.deletedCount;
       ctx.deletedSize = metaInfo.deletedSize;
+      ctx.onceInit = true;
       ctx.opened = true;
       // adapter meta
       ctx.adapterMeta.clear();
@@ -85,6 +88,7 @@ mixin EngineIoLogic on IEngineLogic {
 
   @override
   Future<Result<bool, String>> close() async {
+    if (!ctx.onceInit) return Ok(false);
     try {
       await ctx.readRaf.close();
       await ctx.writeRaf.close();
@@ -102,6 +106,7 @@ mixin EngineIoLogic on IEngineLogic {
 
   @override
   Future<Result<bool, String>> flush() async {
+    if (!ctx.onceInit) return Ok(false);
     try {
       await ctx.writeRaf.flush();
       eventController.add(FlushToDisk());

@@ -43,67 +43,20 @@ void testDB() async {
   final store = DualStore();
   store.registerAdapter(UserAdapter());
 
-  store.events.error.all.listen((event) {
+  store.events.all.listen((event) {
     print('event: $event');
   });
+  await store.reloadIfNotOpened();
+  // await store.changePath('ch.du');
 
-  final openRes = await store.open('user.du');
+  // final openRes = await store.open('user.du');
 
-  if (openRes.isErr) {
-    print('open error: ${openRes.unwrapError()}');
-    return;
-  }
- 
+  // if (openRes.isErr) {
+  //   print('open error: ${openRes.unwrapError()}');
+  //   return;
+  // }
 
-  // await store.compact();
-  final ad = store.getImageFileAdapter;
-  final imgBox = store.getImageBox;
-
-  // await imgBox.add(
-  //   .fromFile(
-  //     File(
-  //       '/home/thancoder/Pictures/ChatGPT Image Sep 19, 2026, 02_12_12 PM.png',
-  //     ),
-  //   ),
-  // );
-  await imgBox.deleteById(1);
-
-  for (var f in await imgBox.getAll()) {
-    print(f);
-    print('id: ${f.generatedId}');
-    final d = await f.imageData;
-    if (d.isOk) {
-      print('data: ${d.unwrap().length}');
-    }
-    if (d.isErr) {
-      print('image error: ${d.unwrapError()}');
-    }
-  }
-
-  print(ad.adapterId);
-  // imgBox.add(.fromFile(file));
-
-  DuBox<User> box = store.getBox<User>();
-
-  // await box.add(
-  //   .new(name: 'two', age: 20, tags: ['one', 'two', 'three']),
-  //   contentWriter: TextCompressContentWriter('i am compress text'),
-  //   diskFlush: true,
-  // );
-  // await box.deleteById(1, diskFlush: false);
-  // await box.deleteById(2, diskFlush: true);
-
-  final list = await box.getAll();
-
-  for (var user in list) {
-    print('ID: ${user.generatedId} - user: $user');
-    final con = await box.getContent<String>(user);
-    if (con.isErr) {
-      print('content Error: ${con.unwrapError()}');
-      return;
-    }
-    print('content: ${con.unwrap()}');
-  }
+  print('onceInit: ${store.onceInit}');
   print('opened: ${store.opened}');
   print('lastId: ${store.state.lastId}');
   print('deletedCount: ${store.state.deletedCount}');

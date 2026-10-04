@@ -86,8 +86,14 @@ sealed class IDualStore {
     return await _eng.open(path);
   }
 
+  /// db current path
   String get path => _eng.ctx.readRaf.path;
+
+  /// db open
   bool get opened => _eng.ctx.opened;
+
+  /// once opened
+  bool get onceInit => _eng.ctx.onceInit;
 
   Future<Result<bool, String>> changePath(String path) async {
     return await _eng.changePath(path);
