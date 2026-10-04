@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/binary_en_de/binary_storage_decoder.dart';
 import 'package:dual_store/src/core/binary_en_de/binary_storage_encoder.dart';
