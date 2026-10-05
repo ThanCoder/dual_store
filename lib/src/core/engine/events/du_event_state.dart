@@ -68,7 +68,7 @@ class DuEventErrorState {
   final Stream<WriteRecordError> writeRecordError;
 
   /// all error events
-  final Stream<DuEvent> all;
+  final Stream<ErrortEvent> all;
 
   /// low level remove meta or delete box
   final Stream<RemoveMetaError> removeMetaError;

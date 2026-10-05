@@ -63,9 +63,7 @@ abstract class IEngineLogic {
       duError: eventController.stream.whereType<DuError>(),
       writeRecordError: eventController.stream.whereType<WriteRecordError>(),
       removeMetaError: eventController.stream.whereType<RemoveMetaError>(),
-      all: eventController.stream.where(
-        (e) => e is DuError || e is WriteRecordError || e is RemoveMetaError,
-      ),
+      all: eventController.stream.whereType<ErrortEvent>(),
     ),
     compact: DuCompactEvent(
       all: eventController.stream.whereType<CompactEvent>(),

@@ -6,16 +6,12 @@ abstract class DuEvent {
   const DuEvent();
 }
 
+//********Box************* */
 abstract class BoxEvent extends DuEvent {
   final int adapterId;
   const BoxEvent({required this.adapterId});
 }
 
-abstract class CompactEvent extends DuEvent {
-  const CompactEvent();
-}
-
-//********Box************* */
 class BoxAdded extends BoxEvent {
   final int id;
   const new({required this.id, required super.adapterId});
@@ -52,6 +48,10 @@ class BoxReadMetaError extends BoxEvent {
 }
 
 //********Compact************* */
+abstract class CompactEvent extends DuEvent {
+  const CompactEvent();
+}
+
 class CompactSuccess extends CompactEvent {
   const CompactSuccess();
 }
@@ -94,17 +94,22 @@ class DeleteId extends DuEvent {
   const DeleteId(this.id);
 }
 
-class DuError extends DuEvent {
+//********Error Events************* */
+abstract class ErrortEvent extends DuEvent {
+  const ErrortEvent();
+}
+
+class DuError extends ErrortEvent {
   final String message;
   const DuError(this.message);
 }
 
-class WriteRecordError extends DuEvent {
+class WriteRecordError extends ErrortEvent {
   final String message;
   const WriteRecordError(this.message);
 }
 
-class RemoveMetaError extends DuEvent {
+class RemoveMetaError extends ErrortEvent {
   final String message;
   const RemoveMetaError(this.message);
 }

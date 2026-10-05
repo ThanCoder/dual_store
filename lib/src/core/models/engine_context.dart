@@ -16,7 +16,16 @@ class EngineContext {
   Map<int, Set<int>> adapterMeta = {};
   EngineContext({this.lastId = 0, this.deletedCount = 0, this.deletedSize = 0});
 
-  bool onceInit = false;
+  bool get onceInit {
+    try {
+      writeRaf;
+      readRaf;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   bool opened = false;
 
   int get generatedId {

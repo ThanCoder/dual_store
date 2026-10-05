@@ -46,6 +46,8 @@ void testDB() async {
   store.events.all.listen((event) {
     print('event: $event');
   });
+  store.events.error;
+
   await store.reloadIfNotOpened();
   // await store.changePath('ch.du');
 

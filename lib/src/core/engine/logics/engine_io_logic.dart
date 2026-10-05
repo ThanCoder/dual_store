@@ -69,7 +69,6 @@ mixin EngineIoLogic on IEngineLogic {
       ctx.lastId = metaInfo.lastId;
       ctx.deletedCount = metaInfo.deletedCount;
       ctx.deletedSize = metaInfo.deletedSize;
-      ctx.onceInit = true;
       ctx.opened = true;
       // adapter meta
       ctx.adapterMeta.clear();

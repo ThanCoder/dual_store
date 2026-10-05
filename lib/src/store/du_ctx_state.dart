@@ -29,4 +29,12 @@ class DuCtxState {
 
   /// db open or not
   bool get opened => _ctx.opened;
+
+  /// current db path
+  String get path {
+    if (_ctx.onceInit) {
+      return _ctx.readRaf.path;
+    }
+    return '';
+  }
 }
