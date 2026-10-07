@@ -96,20 +96,18 @@ class DeleteId extends DuEvent {
 
 //********Error Events************* */
 abstract class ErrortEvent extends DuEvent {
-  const ErrortEvent();
+  final String message;
+  const ErrortEvent(this.message);
 }
 
 class DuError extends ErrortEvent {
-  final String message;
-  const DuError(this.message);
+  const new(super.message);
 }
 
 class WriteRecordError extends ErrortEvent {
-  final String message;
-  const WriteRecordError(this.message);
+  const new(super.message);
 }
 
 class RemoveMetaError extends ErrortEvent {
-  final String message;
-  const RemoveMetaError(this.message);
+  const new(super.message);
 }

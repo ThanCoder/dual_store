@@ -112,6 +112,11 @@ sealed class IDualStore {
     return await _eng.close();
   }
 
+  /// close database && close event
+  Future<void> dispose() async {
+    await _eng.dispose();
+  }
+
   /// flushes the contents of the file to disk.
   Future<Result<bool, String>> flush() async {
     return await _eng.flush();

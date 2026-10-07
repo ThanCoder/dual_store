@@ -96,11 +96,16 @@ mixin EngineIoLogic on IEngineLogic {
       ctx.allMeta.clear();
       ctx.adapterMeta.clear();
 
-      eventController.close();
       return Ok(true);
     } catch (e) {
       return Err(e.toString());
     }
+  }
+
+  /// close database && close event
+  Future<void> dispose() async {
+    await close();
+    eventController.close();
   }
 
   @override
