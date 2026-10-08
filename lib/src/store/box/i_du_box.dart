@@ -6,6 +6,12 @@ import 'package:dual_store/src/result_t.dart';
 import '../dual_store_base.dart';
 
 abstract class IDuBox<T extends IDuModel> {
+  /// first one
+  Future<T?> getOne({int? parentId});
+
+  /// first one
+  Stream<T?> streamOne({int? parentId});
+
   /// Streams all models one by one.
   Stream<T> streamAll({int? parentId});
 
@@ -63,6 +69,9 @@ abstract class IDuBox<T extends IDuModel> {
   /// supported: `TextRawContentReader`,`TextCompressContentReader`
   ///
   Future<Result<R, String>> getContent<R>(T value);
+
+  /// get content data or null
+  Future<R?> getContentOrNull<R>(T value);
 
   // Future<void> delete(T value);
   // Future<void> updateById(int id, T value, {String? contentValue});

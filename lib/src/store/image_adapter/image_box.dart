@@ -19,6 +19,14 @@ class ImageBox {
     error: _allEvent.whereType<BoxError>(),
   );
 
+  ///first one
+  Future<ImageFile?> getOne({int? parentId}) async {
+    for (var val in await getAll(parentId: parentId)) {
+      return val;
+    }
+    return null;
+  }
+
   ///get all image
   Future<List<ImageFile>> getAll({int? parentId}) async {
     final list = <ImageFile>[];
@@ -91,7 +99,7 @@ class ImageBox {
   }
 
   /// IMAGE  bytes data
-  Future<Result<Uint8List, String>> getContent(IImageDuModel value) async {
+  Future<Uint8List?> getContent(IImageDuModel value) async {
     final res = await _store._eng.readContent<Uint8List>(value._meta);
     if (res.isErr) {
       _store._eng.eventController.add(
@@ -102,7 +110,10 @@ class ImageBox {
         ),
       );
     }
-    return res;
+    if (res.isOk) {
+      return res.unwrap();
+    }
+    return null;
   }
 
   /// delete image
@@ -140,6 +151,39 @@ class ImageBox {
     if (res.isOk) {
       _store._eng.eventController.add(
         BoxDeleted(id: id, adapterId: _adapter.adapterId),
+      );
+    }
+    if (res.isErr) {
+      _store._eng.eventController.add(
+        BoxError(
+          id: id,
+          adapterId: _adapter.adapterId,
+          message: res.unwrapError(),
+        ),
+      );
+    }
+    return res;
+  }
+
+  /// update by id
+  Future<Result<bool, String>> updateById(
+    int id, {
+    required ImageFile file,
+    bool diskFlush = true,
+  }) async {
+    final remRes = await _store._eng.removeMetaById(id);
+    if (remRes.isErr) {
+      return Err(remRes.unwrapError());
+    }
+    final res = await _store._eng.writeRecord(
+      _adapter.toMetaWriter(file),
+      BytesRawContentWriter(bytes: file._data!),
+      diskFlush: diskFlush,
+      id: id,
+    );
+    if (res.isOk) {
+      _store._eng.eventController.add(
+        BoxUpdated(id: id, adapterId: _adapter.adapterId),
       );
     }
     if (res.isErr) {

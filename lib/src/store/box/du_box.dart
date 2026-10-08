@@ -24,6 +24,15 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
 
   //*********stream******************/
   @override
+  Stream<T?> streamOne({int? parentId}) async* {
+    await for (var val in streamAll(parentId: parentId)) {
+      yield val;
+      return;
+    }
+    yield null;
+  }
+
+  @override
   Stream<T> streamAll({int? parentId}) async* {
     try {
       final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
@@ -83,6 +92,14 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   //*********normal******************/
+  @override
+  Future<T?> getOne({int? parentId}) async {
+    for (var val in await getAll(parentId: parentId)) {
+      return val;
+    }
+    return null;
+  }
+
   @override
   Future<Result<T, String>> getById(int id) async {
     try {
@@ -184,6 +201,24 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
+  Future<R?> getContentOrNull<R>(T value) async {
+    final res = await _store._eng.readContent<R>(value._meta);
+    if (res.isErr) {
+      _store._eng.eventController.add(
+        BoxError(
+          id: value.generatedId,
+          adapterId: _adapter.adapterId,
+          message: res.unwrapError(),
+        ),
+      );
+    }
+    if (res.isOk) {
+      return res.unwrap();
+    }
+    return null;
+  }
+
+  @override
   Future<Result<int, String>> add(
     T value, {
     IContentWriter contentWriter = const NoneContentWriter(),
@@ -236,7 +271,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     if (res.isErr) {
       _store._eng.eventController.add(
         BoxError(
-          id: value.generatedId,
+          id: id,
           adapterId: _adapter.adapterId,
           message: res.unwrapError(),
         ),

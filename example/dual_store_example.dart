@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/binary_en_de/binary_storage_decoder.dart';
 import 'package:dual_store/src/core/binary_en_de/binary_storage_encoder.dart';
@@ -49,14 +51,11 @@ void testDB() async {
   store.events.error;
 
   await store.reloadIfNotOpened();
-  // await store.changePath('ch.du');
 
-  // final openRes = await store.open('user.du');
-
-  // if (openRes.isErr) {
-  //   print('open error: ${openRes.unwrapError()}');
-  //   return;
-  // }
+  final box = store.getBox();
+  final imgBox = store.getImageBox;
+  final f = await imgBox.getOne();
+  await f?.imageData;
 
   print('onceInit: ${store.onceInit}');
   print('opened: ${store.opened}');

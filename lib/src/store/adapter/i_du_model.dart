@@ -55,7 +55,7 @@ sealed class IIDuModel {
 /// }
 ///
 /// ```
-
+/// box model
 abstract class IDuModel extends IIDuModel {
   IDuModel();
 
@@ -93,6 +93,14 @@ abstract class IDuModel extends IIDuModel {
     return await _box.getContent<R>(this);
   }
 
+  /// get content or null
+  Future<R?> getContentOrNull<R>() async {
+    if (!_isSettedBox) {
+      return null;
+    }
+    return await _box.getContentOrNull<R>(this);
+  }
+
   /// Deletes this model from the database.
   Future<Result<bool, String>> delete() async {
     if (!_isSettedBox) {
@@ -103,6 +111,7 @@ abstract class IDuModel extends IIDuModel {
   }
 }
 
+/// image model
 abstract class IImageDuModel extends IIDuModel {
   IImageDuModel();
 
@@ -118,12 +127,15 @@ abstract class IImageDuModel extends IIDuModel {
   }
 
   /// image data
-  Future<Result<Uint8List, String>> get imageData async {
+  Future<Uint8List?> get imageData async {
     try {
-      if (!_isSettedBox) return Err('box not setted');
+      if (!_isSettedBox) {
+        return null;
+      }
       return await _box.getContent(this);
     } catch (e) {
-      return Err(e.toString());
+      // return Err(e.toString());
+      return null;
     }
   }
 
