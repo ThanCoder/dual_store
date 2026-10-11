@@ -107,7 +107,6 @@ class _TodoAppState extends State<TodoApp> {
 
   @override
   Widget build(BuildContext context) {
-    print('adapters : ${store.state.adapterIds}');
     return Scaffold(
       appBar: AppBar(
         title: Text('Todo'),
@@ -117,45 +116,40 @@ class _TodoAppState extends State<TodoApp> {
             FilledButton(onPressed: compact, child: Text('DB Compact')),
         ],
       ),
-      body: StreamBuilder(
-        stream: store.events.open,
-        builder: (context, asyncSnapshot) {
-          return CustomScrollView(
-            slivers: [
-              StreamBuilder(
-                stream: todoBox.events.all,
-                builder: (context, asyncSnapshot) {
-                  return SliverToBoxAdapter(
-                    child: Container(
-                      padding: .all(10),
-                      decoration: BoxDecoration(
-                        color: col.surfaceContainer,
-                        borderRadius: .circular(15),
+      body: CustomScrollView(
+        slivers: [
+          StreamBuilder(
+            stream: todoBox.getSearchBox(searchType: .linear).getAllStream(),
+            builder: (context, asyncSnapshot) {
+              return SliverToBoxAdapter(
+                child: Container(
+                  padding: .all(10),
+                  decoration: BoxDecoration(
+                    color: col.surfaceContainer,
+                    borderRadius: .circular(15),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'LastId: ${store.state.lastId}',
+                        style: TextStyle(fontSize: 18, fontWeight: .w600),
                       ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'LastId: ${store.state.lastId}',
-                            style: TextStyle(fontSize: 18, fontWeight: .w600),
-                          ),
-                          Text(
-                            'deletedCount: ${store.state.deletedCount}',
-                            style: TextStyle(fontSize: 18, fontWeight: .w600),
-                          ),
-                          Text(
-                            'deletedSize: ${store.state.deletedSize}',
-                            style: TextStyle(fontSize: 18, fontWeight: .w600),
-                          ),
-                        ],
+                      Text(
+                        'deletedCount: ${store.state.deletedCount}',
+                        style: TextStyle(fontSize: 18, fontWeight: .w600),
                       ),
-                    ),
-                  );
-                },
-              ),
-              SliverPadding(padding: .all(10), sliver: _listWidget),
-            ],
-          );
-        },
+                      Text(
+                        'deletedSize: ${store.state.deletedSize}',
+                        style: TextStyle(fontSize: 18, fontWeight: .w600),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          SliverPadding(padding: .all(10), sliver: _listWidget),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: addTodo,

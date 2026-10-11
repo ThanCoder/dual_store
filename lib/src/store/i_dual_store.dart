@@ -69,8 +69,14 @@ sealed class IDualStore {
   //*************Engine******************** */
   final _eng = DualEngine();
 
+  /// open database
   Future<Result<bool, String>> open(String path) async {
     return await _eng.open(path);
+  }
+
+  /// open database async
+  Result<bool, String> openAsync(String path) {
+    return _eng.openAsync(path);
   }
 
   ///result
@@ -112,14 +118,29 @@ sealed class IDualStore {
     return await _eng.close();
   }
 
+  /// close database async
+  Result<bool, String> closeAsync() {
+    return _eng.closeAsync();
+  }
+
   /// close database && close event
   Future<void> dispose() async {
     await _eng.dispose();
   }
 
+  /// close database && close event
+  void disposeAsync() {
+    _eng.disposeAsync();
+  }
+
   /// flushes the contents of the file to disk.
   Future<Result<bool, String>> flush() async {
     return await _eng.flush();
+  }
+
+  /// flushes the contents of the file to disk.
+  Result<bool, String> flushAsync() {
+    return _eng.flushAsync();
   }
 
   //*************Events******************** */

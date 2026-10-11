@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
+import 'package:dual_store/dual_store.dart';
 import 'package:dual_store/src/core/models/meta.dart';
 
 abstract class DuEvent {
@@ -8,43 +9,64 @@ abstract class DuEvent {
 
 //********Box************* */
 abstract class BoxEvent extends DuEvent {
+  final int id;
   final int adapterId;
-  const BoxEvent({required this.adapterId});
+  const new({required this.id, required this.adapterId});
 }
 
-class BoxAdded extends BoxEvent {
-  final int id;
-  const new({required this.id, required super.adapterId});
+class BoxAdded<T extends IDuModel> extends BoxEvent {
+  final T value;
+  new(this.value, {required super.id, required super.adapterId});
 }
 
-class BoxUpdated extends BoxEvent {
-  final int id;
-  const new({required this.id, required super.adapterId});
+class BoxUpdated<T extends IDuModel> extends BoxEvent {
+  final T value;
+  new(this.value, {required super.id, required super.adapterId});
 }
 
 class BoxDeleted extends BoxEvent {
-  final int id;
-  const new({required this.id, required super.adapterId});
+  new({required super.id, required super.adapterId});
 }
 
 class BoxError extends BoxEvent {
-  final int id;
   final String message;
   const new({
-    required this.id,
+    required super.id,
     required super.adapterId,
     required this.message,
   });
 }
 
 class BoxReadMetaError extends BoxEvent {
-  final int id;
   final String message;
   const new({
-    required this.id,
+    required super.id,
     required super.adapterId,
     required this.message,
   });
+}
+
+//********Image Box************* */
+abstract class ImageBoxEvent extends DuEvent {
+  final int id;
+  const new(this.id);
+}
+
+class ImageBoxAdded extends ImageBoxEvent {
+  new(super.id);
+}
+
+class ImageBoxUpdated extends ImageBoxEvent {
+  new(super.id);
+}
+
+class ImageBoxDeleted extends ImageBoxEvent {
+  new(super.id);
+}
+
+class ImageBoxError extends ImageBoxEvent {
+  final String message;
+  const new(super.id, this.message);
 }
 
 //********Compact************* */

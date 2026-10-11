@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dual_store/src/core/engine/du_header_io.dart';
 import 'package:dual_store/src/core/engine/logics/compact_logic.dart';
+import 'package:dual_store/src/core/engine/logics/engine_async_io_logic.dart';
 import 'package:dual_store/src/core/engine/logics/engine_io_logic.dart';
 import 'package:dual_store/src/core/engine/logics/content_reader_logic.dart';
 import 'package:dual_store/src/core/models/engine_context.dart';
@@ -22,7 +23,8 @@ class DualEngine extends IEngineLogic
         MetaInfoLogic,
         MetaRemoverLogic,
         ContentReaderLogic,
-        CompactLogic {
+        CompactLogic,
+        EngineAsyncIoLogic {
   // ignore: public_member_api_docs
   DualEngine();
 

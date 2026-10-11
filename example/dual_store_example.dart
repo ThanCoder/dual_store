@@ -48,14 +48,22 @@ void testDB() async {
   store.events.all.listen((event) {
     print('event: $event');
   });
-  store.events.error;
 
-  await store.reloadIfNotOpened();
+  await store.open('user.du');
 
-  final box = store.getBox();
-  final imgBox = store.getImageBox;
-  final f = await imgBox.getOne();
-  await f?.imageData;
+  final box = store.getBox<User>();
+
+  box.getSearchBox(searchType: .linear).getAllStream().listen((users) {
+    print('users: $users');
+  });
+
+  // await box.add(.new(name: 'one', age: 21));
+  // await box.add(.new(name: 'two', age: 21));
+  // await box.add(.new(name: 'three', age: 21));
+  // await box.add(.new(name: 'four', age: 12));
+  await box.deleteById(4);
+
+  // print(await box.getAll());
 
   print('onceInit: ${store.onceInit}');
   print('opened: ${store.opened}');
@@ -64,28 +72,6 @@ void testDB() async {
   print('deletedSize: ${store.state.deletedSize}');
 
   await store.close();
-}
-
-class User extends IDuModel {
-  final String name;
-  final int age;
-  final List<String> tags;
-  User({required this.name, required this.age, required this.tags});
-
-  @override
-  String toString() => '''User(name: $name, age: $age, tags: $tags)''';
-
-  Map<String, dynamic> toJson() {
-    return {'name': name, 'age': age, 'tags': tags};
-  }
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      name: json['name'],
-      age: json['age'],
-      tags: List<String>.from(json['tags']),
-    );
-  }
 }
 
 class UserAdapter extends IDuBinaryMetaAdapter<User> {
@@ -100,5 +86,22 @@ class UserAdapter extends IDuBinaryMetaAdapter<User> {
   @override
   Map<String, dynamic> toMap(User value) {
     return value.toJson();
+  }
+}
+
+class User extends IDuModel {
+  final String name;
+  final int age;
+  User({required this.name, required this.age});
+
+  @override
+  String toString() => '''User(ID: $generatedId, name: $name, age: $age)''';
+
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'age': age};
+  }
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(name: json['name'], age: json['age']);
   }
 }

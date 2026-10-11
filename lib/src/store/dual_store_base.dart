@@ -13,6 +13,7 @@ import 'package:dual_store/src/result_t.dart';
 import 'package:dual_store/src/store/adapter/i_du_adapter.dart';
 import 'package:dual_store/src/store/box/i_du_box.dart';
 import 'package:dual_store/src/store/du_ctx_state.dart';
+import 'package:dual_store/src/store/search/i_search.dart';
 
 part 'adapter/i_du_model.dart';
 part 'box/du_box.dart';

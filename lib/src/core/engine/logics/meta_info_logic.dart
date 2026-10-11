@@ -32,13 +32,13 @@ mixin MetaInfoLogic on IEngineLogic {
       return Ok(.new());
     }
     return await Isolate.run<Result<MetaInfo, String>>(
-      () => _getMetaInfoSync(path),
+      () => getMetaInfoSync(path),
     );
   }
 }
 
 /// Get Meta Info Sync
-Result<MetaInfo, String> _getMetaInfoSync(String path) {
+Result<MetaInfo, String> getMetaInfoSync(String path) {
   final readRaf = File(path).openSync(mode: FileMode.read);
   if (readRaf.lengthSync() == 0) {
     return Ok(.new());

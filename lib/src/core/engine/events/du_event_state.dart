@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:dual_store/src/core/engine/events/du_event.dart';
 
 /// event
@@ -51,9 +53,7 @@ class DuEventState {
   final DuBoxEvent box;
 }
 
-// ignore: public_member_api_docs
 class DuEventErrorState {
-  // ignore: public_member_api_docs
   const DuEventErrorState({
     required this.duError,
     required this.writeRecordError,
@@ -114,7 +114,7 @@ class DuBoxEvent {
   final Stream<BoxReadMetaError> readMetaError;
 
   ///box event
-  const DuBoxEvent({
+  const new({
     required this.all,
     required this.add,
     required this.update,
@@ -124,9 +124,33 @@ class DuBoxEvent {
   });
 }
 
-// ignore: public_member_api_docs
+class ImageBoxEventState {
+  /// box all event
+  final Stream<ImageBoxEvent> all;
+
+  /// add box
+  final Stream<ImageBoxAdded> add;
+
+  /// box update
+  final Stream<ImageBoxUpdated> update;
+
+  /// box delete
+  final Stream<ImageBoxDeleted> delete;
+
+  /// box error
+  final Stream<ImageBoxError> error;
+
+  ///box event
+  const new({
+    required this.all,
+    required this.add,
+    required this.update,
+    required this.delete,
+    required this.error,
+  });
+}
+
 extension DuEventStateExt on Stream<DuEvent> {
-  // ignore: public_member_api_docs
   Stream<T> whereType<T>() {
     return where((e) => e is T).cast<T>();
   }

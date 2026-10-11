@@ -7,16 +7,18 @@ class ImageBox {
   final IDualStore _store;
   ImageBox({required this._adapter, required this._store});
 
-  late final _allEvent = _store._eng.events.box.all.where(
-    (e) => e.adapterId == _adapter.adapterId,
-  );
-  late final events = DuBoxEvent(
+  ///registerd adapter id
+  int get adapterId => _adapter.adapterId;
+
+  late final _allEvent = _store._eng.events.box.all
+      .where((e) => e is ImageBoxEvent && e.adapterId == _adapter.adapterId)
+      .cast<ImageBoxEvent>();
+  late final events = ImageBoxEventState(
     all: _allEvent,
-    add: _allEvent.whereType<BoxAdded>(),
-    update: _allEvent.whereType<BoxUpdated>(),
-    delete: _allEvent.whereType<BoxDeleted>(),
-    readMetaError: _allEvent.whereType<BoxReadMetaError>(),
-    error: _allEvent.whereType<BoxError>(),
+    add: _allEvent.whereType<ImageBoxAdded>(),
+    update: _allEvent.whereType<ImageBoxUpdated>(),
+    delete: _allEvent.whereType<ImageBoxDeleted>(),
+    error: _allEvent.whereType<ImageBoxError>(),
   );
 
   ///first one
@@ -49,13 +51,7 @@ class ImageBox {
           // add list
           list.add(val);
         } catch (e) {
-          _store._eng.eventController.add(
-            BoxReadMetaError(
-              id: meta.id,
-              adapterId: meta.adapterId,
-              message: e.toString(),
-            ),
-          );
+          _store._eng.eventController.add(ImageBoxError(meta.id, e.toString()));
         }
       }
     } catch (e) {
@@ -83,17 +79,11 @@ class ImageBox {
     );
     if (res.isErr) {
       _store._eng.eventController.add(
-        BoxError(
-          id: generatedId,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
+        ImageBoxError(generatedId, res.unwrapError()),
       );
       return Err(res.unwrapError());
     }
-    _store._eng.eventController.add(
-      BoxAdded(id: generatedId, adapterId: _adapter.adapterId),
-    );
+    _store._eng.eventController.add(ImageBoxAdded(generatedId));
 
     return Ok(generatedId);
   }
@@ -103,11 +93,7 @@ class ImageBox {
     final res = await _store._eng.readContent<Uint8List>(value._meta);
     if (res.isErr) {
       _store._eng.eventController.add(
-        BoxError(
-          id: value.generatedId,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
+        ImageBoxError(value.generatedId, res.unwrapError()),
       );
     }
     if (res.isOk) {
@@ -126,17 +112,11 @@ class ImageBox {
       diskFlush: diskFlush,
     );
     if (res.isOk) {
-      _store._eng.eventController.add(
-        BoxDeleted(id: file.generatedId, adapterId: _adapter.adapterId),
-      );
+      _store._eng.eventController.add(ImageBoxDeleted(file.generatedId));
     }
     if (res.isErr) {
       _store._eng.eventController.add(
-        BoxError(
-          id: file.generatedId,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
+        ImageBoxError(file.generatedId, res.unwrapError()),
       );
     }
     return res;
@@ -149,18 +129,10 @@ class ImageBox {
   }) async {
     final res = await _store._eng.removeMetaById(id, diskFlush: diskFlush);
     if (res.isOk) {
-      _store._eng.eventController.add(
-        BoxDeleted(id: id, adapterId: _adapter.adapterId),
-      );
+      _store._eng.eventController.add(ImageBoxDeleted(id));
     }
     if (res.isErr) {
-      _store._eng.eventController.add(
-        BoxError(
-          id: id,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
-      );
+      _store._eng.eventController.add(ImageBoxError(id, res.unwrapError()));
     }
     return res;
   }
@@ -182,18 +154,10 @@ class ImageBox {
       id: id,
     );
     if (res.isOk) {
-      _store._eng.eventController.add(
-        BoxUpdated(id: id, adapterId: _adapter.adapterId),
-      );
+      _store._eng.eventController.add(ImageBoxUpdated(id));
     }
     if (res.isErr) {
-      _store._eng.eventController.add(
-        BoxError(
-          id: id,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
-      );
+      _store._eng.eventController.add(ImageBoxError(id, res.unwrapError()));
     }
     return res;
   }

@@ -2,12 +2,30 @@
 
 part of '../dual_store_base.dart';
 
-// class BoxEvent {}
-
 class DuBox<T extends IDuModel> implements IDuBox<T> {
   final IDuMetaAdapter<T> _adapter;
   final IDualStore _store;
-  DuBox({required this._adapter, required this._store});
+  new({required this._adapter, required this._store});
+
+  /// registred adapter id
+  int get adapterId => _adapter.adapterId;
+
+  //*********Search******************/
+  final Map<SearchType, ISearch> _searchBox = {};
+
+  /// search box
+  ISearch<T> getSearchBox({required SearchType searchType}) {
+    final sh = _searchBox[searchType];
+    if (sh == null) {
+      final newSh = switch (searchType) {
+        .linear => LinearSearch<T>(box: this, event: events, adapter: _adapter),
+        // .binary => BinarySearch<T>(box: this, event: events, adapter: _adapter),
+      };
+      _searchBox[searchType] = newSh;
+      return newSh;
+    }
+    return sh as ISearch<T>;
+  }
 
   //*********Events******************/
   late final _allEvent = _store._eng.events.box.all.where(
@@ -147,40 +165,8 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   @override
   Future<List<T>> getAll({int? parentId}) async {
     final list = <T>[];
-    try {
-      final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
-      if (allMetaIds == null) return [];
-
-      for (var metaId in allMetaIds.toList()) {
-        final meta = _store._eng.ctx.allMeta[metaId];
-        if (meta == null) continue;
-
-        if (parentId != null && meta.parentId != parentId) continue;
-        try {
-          final reader = _adapter.toMetaReader(meta.metaData);
-          final val = _adapter.fromMap(reader.decode());
-          // add private model
-          val._meta = meta;
-          val._box = this;
-          // add list
-          list.add(val);
-        } catch (e) {
-          _store._eng.eventController.add(
-            BoxReadMetaError(
-              id: meta.id,
-              adapterId: meta.adapterId,
-              message: e.toString(),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      _store._eng.eventController.add(
-        DuError('[DuBox:getAll]: ${e.toString()}'),
-      );
-      _store._eng.eventController.add(
-        BoxError(id: -1, adapterId: _adapter.adapterId, message: e.toString()),
-      );
+    await for (var val in streamAll(parentId: parentId)) {
+      list.add(val);
     }
     return list;
   }
@@ -242,7 +228,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       return Err(res.unwrapError());
     }
     _store._eng.eventController.add(
-      BoxAdded(id: generatedId, adapterId: _adapter.adapterId),
+      BoxAdded(value, id: generatedId, adapterId: _adapter.adapterId),
     );
 
     return Ok(generatedId);
@@ -265,7 +251,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     );
     if (res.isOk) {
       _store._eng.eventController.add(
-        BoxUpdated(id: id, adapterId: _adapter.adapterId),
+        BoxUpdated(value, id: id, adapterId: _adapter.adapterId),
       );
     }
     if (res.isErr) {

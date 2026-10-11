@@ -7,6 +7,8 @@ import 'package:dual_store/src/store/dual_store_base.dart';
 /// meta adapter
 sealed class IDuMetaAdapter<T extends IIDuModel> {
   /// 1-255
+  ///
+  /// Can Register id -> 1-255
   int get adapterId;
 
   /// parent id

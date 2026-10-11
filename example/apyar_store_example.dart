@@ -11,29 +11,34 @@ void main() async {
 
 Future<void> getAll(Directory dir) async {
   final path = '${dir.path}/apyar.store';
-  final st = DualStore();
-  st.registerAdapter(ApyarAdapter());
-  st.registerAdapter(ApyarContentAdapter());
+  final store = DualStore();
+  store.registerAdapter(ApyarAdapter());
+  store.registerAdapter(ApyarContentAdapter());
 
-  await st.open(path);
+  await store.open(path);
 
-  final apBox = st.getBox<Apyar>();
-  final conBox = st.getBox<ApyarContent>();
-  final list = await apBox.getAll();
+  final apBox = store.getBox<Apyar>();
+  // final conBox = store.getBox<ApyarContent>();
+  // final list = await apBox.getAll();
+  // print(list.last.generatedId);
+  // print(list.last.title);
+  final st = Stopwatch();
 
-  for (var ap in list) {
-    print(ap.title);
-    final apCon = await ap.getContent();
-    print('ap content: ${apCon.unwrap()}');
-
-    final conList = await conBox.getAll(parentId: ap.generatedId);
-    final con = conList.first;
-    // final content = await conBox.getContent<String>(con);
-    final content = await con.getContent<String>();
-    print('content len: ${content.unwrap().length}');
-    // File(ap.title).writeAsString(content.unwrap());
-    return;
-  }
+  final searchBox = apBox.getSearchBox(searchType: .linear);
+  await searchBox.getAll();
+  
+  st.start();
+  final res = await searchBox
+  //
+  // .findOne((value) => value.generatedId == 3289)
+  .findOne((value) => value.title.trim() == 'ကာမ၏ အဆုံးအစွန် နယ်ပါယ်')
+  // .find((value) => value.age == 21)
+  // .getOne()
+  //
+  ;
+  st.stop();
+  print(res);
+  print('search timer: ${st.elapsed.inMilliseconds} ms');
 }
 
 Future<void> addAll(Directory dir) async {
@@ -159,3 +164,6 @@ class ApyarContentAdapter extends IDuBinaryMetaAdapter<ApyarContent> {
     return value.apyarId;
   }
 }
+
+// 3289
+// ကာမ၏ အဆုံးအစွန် နယ်ပါယ်
