@@ -1,6 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
-part of 'i_search.dart';
+part of '../dual_store_base.dart';
 
 sealed class SearchEvent {
   const new();

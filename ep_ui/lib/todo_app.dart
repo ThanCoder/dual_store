@@ -160,21 +160,16 @@ class _TodoAppState extends State<TodoApp> {
 
   Widget get _listWidget {
     return StreamBuilder(
-      stream: todoBox.events.all,
+      stream: todoBox.getSearchBox(searchType: .linear).getAllStream(),
       builder: (context, snapshot) {
-        return FutureBuilder(
-          future: todoBox.getAll(),
-          builder: (context, snapshot) {
-            final list = snapshot.data ?? [];
-            list.sort((a, b) => b.date.compareTo(a.date));
-            return SliverList.separated(
-              separatorBuilder: (context, index) => SizedBox(height: 10),
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                final item = list[index];
-                return _listItem(item);
-              },
-            );
+        final list = snapshot.data ?? [];
+        list.sort((a, b) => b.date.compareTo(a.date));
+        return SliverList.separated(
+          separatorBuilder: (context, index) => SizedBox(height: 10),
+          itemCount: list.length,
+          itemBuilder: (context, index) {
+            final item = list[index];
+            return _listItem(item);
           },
         );
       },
@@ -217,7 +212,7 @@ class _TodoAppState extends State<TodoApp> {
                     Checkbox.adaptive(
                       value: item.checked,
                       onChanged: (value) async {
-                        todoBox.update(
+                        todoBox.updateByid(
                           item.generatedId,
                           value: item.copyWith(checked: value),
                         );
@@ -236,7 +231,10 @@ class _TodoAppState extends State<TodoApp> {
             ),
             onPressed: () async {
               // todoBox.deleteById(item.generatedId);
-              await item.delete();
+              final res = await item.delete();
+              if (res.isErr) {
+                print(res.unwrapError());
+              }
             },
             label: Text('Delete'),
             icon: Icon(Icons.delete_forever_outlined),

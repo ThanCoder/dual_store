@@ -1,6 +1,6 @@
 // ignore_for_file: public_member_api_docs
 
-part of 'i_search.dart';
+part of '../dual_store_base.dart';
 
 class LinearSearch<T extends IDuModel> extends ISearch<T> {
   new({required super.box, required super.event, required super.adapter}) {

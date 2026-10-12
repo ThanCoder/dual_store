@@ -1,5 +1,9 @@
 # 0.3.0
+
 * Added `store.getImageBox`
++ Fixed `box`
++ Added `box.methods`
++ Fixed `box.error`
 
 # 0.2.0
 * Fixed `store.compact`

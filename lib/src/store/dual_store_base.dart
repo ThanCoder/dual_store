@@ -13,7 +13,6 @@ import 'package:dual_store/src/result_t.dart';
 import 'package:dual_store/src/store/adapter/i_du_adapter.dart';
 import 'package:dual_store/src/store/box/i_du_box.dart';
 import 'package:dual_store/src/store/du_ctx_state.dart';
-import 'package:dual_store/src/store/search/i_search.dart';
 
 part 'adapter/i_du_model.dart';
 part 'box/du_box.dart';
@@ -21,6 +20,11 @@ part 'i_dual_store.dart';
 part 'image_adapter/image_box.dart';
 part 'image_adapter/image_file_adapter.dart';
 part 'image_adapter/image_store_logic.dart';
+part 'search/i_search.dart';
+// part 'search/binary_search.dart';
+part 'search/linear_search.dart';
+part 'search/search_event.dart';
+part 'search/search_event_state.dart';
 
 /// du store
 class DualStore extends IDualStore with ImageStoreLogic {

@@ -54,8 +54,22 @@ abstract class IDuBox<T extends IDuModel> {
   /// `NoneContentWriter`,
   ///
   /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
-  Future<Result<bool, String>> update(
+  Future<Result<bool, String>> updateByid(
     int id, {
+    bool diskFlush = true,
+    required T value,
+
+    /// Supported:
+    /// `NoneContentWriter`,
+    ///
+    /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
+    IContentWriter contentWriter = const NoneContentWriter(),
+  });
+
+  /// update one
+  Future<Result<bool, String>> updateOne(
+    bool Function(T value) test, {
+    bool diskFlush = true,
     required T value,
 
     /// Supported:
@@ -76,4 +90,10 @@ abstract class IDuBox<T extends IDuModel> {
   // Future<void> delete(T value);
   // Future<void> updateById(int id, T value, {String? contentValue});
   Future<Result<bool, String>> deleteById(int id, {bool diskFlush = true});
+
+  /// delete
+  Future<Result<bool, String>> delete(
+    bool Function(T value) test, {
+    bool diskFlush = true,
+  });
 }

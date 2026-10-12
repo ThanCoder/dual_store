@@ -65,7 +65,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
           final reader = _adapter.toMetaReader(meta.metaData);
           final val = _adapter.fromMap(reader.decode());
           // add private model
-          val._meta = meta;
+          val._generatedId = meta.id;
           val._box = this;
           // add list
           yield val;
@@ -130,7 +130,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       }
       final reader = _adapter.toMetaReader(meta.metaData);
       final val = _adapter.fromMap(reader.decode());
-      val._meta = meta;
+      val._generatedId = meta.id;
       val._box = this;
 
       return Ok(val);
@@ -173,35 +173,43 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
 
   @override
   Future<Result<R, String>> getContent<R>(T value) async {
-    final res = await _store._eng.readContent<R>(value._meta);
-    if (res.isErr) {
-      _store._eng.eventController.add(
-        BoxError(
-          id: value.generatedId,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
-      );
+    try {
+      final res = await _store._eng.readContent<R>(value._meta);
+      if (res.isErr) {
+        _store._eng.eventController.add(
+          BoxError(
+            id: value.generatedId,
+            adapterId: _adapter.adapterId,
+            message: res.unwrapError(),
+          ),
+        );
+      }
+      return res;
+    } catch (e) {
+      return Err(e.toString());
     }
-    return res;
   }
 
   @override
   Future<R?> getContentOrNull<R>(T value) async {
-    final res = await _store._eng.readContent<R>(value._meta);
-    if (res.isErr) {
-      _store._eng.eventController.add(
-        BoxError(
-          id: value.generatedId,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
-      );
+    try {
+      final res = await _store._eng.readContent<R>(value._meta);
+      if (res.isErr) {
+        _store._eng.eventController.add(
+          BoxError(
+            id: value.generatedId,
+            adapterId: _adapter.adapterId,
+            message: res.unwrapError(),
+          ),
+        );
+      }
+      if (res.isOk) {
+        return res.unwrap();
+      }
+      return null;
+    } catch (e) {
+      return null;
     }
-    if (res.isOk) {
-      return res.unwrap();
-    }
-    return null;
   }
 
   @override
@@ -210,60 +218,102 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     IContentWriter contentWriter = const NoneContentWriter(),
     bool diskFlush = true,
   }) async {
-    final generatedId = _store._eng.ctx.generatedId;
-    final res = await _store._eng.writeRecord(
-      _adapter.toMetaWriter(value),
-      contentWriter,
-      id: generatedId,
-      diskFlush: diskFlush,
-    );
-    if (res.isErr) {
-      _store._eng.eventController.add(
-        BoxError(
-          id: generatedId,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
+    try {
+      final generatedId = _store._eng.ctx.generatedId;
+      final res = await _store._eng.writeRecord(
+        _adapter.toMetaWriter(value),
+        contentWriter,
+        id: generatedId,
+        diskFlush: diskFlush,
       );
-      return Err(res.unwrapError());
-    }
-    _store._eng.eventController.add(
-      BoxAdded(value, id: generatedId, adapterId: _adapter.adapterId),
-    );
+      if (res.isErr) {
+        _store._eng.eventController.add(
+          BoxError(
+            id: generatedId,
+            adapterId: _adapter.adapterId,
+            message: res.unwrapError(),
+          ),
+        );
+        return Err(res.unwrapError());
+      }
+      // set model
+      value._box = this;
+      value._generatedId = generatedId;
 
-    return Ok(generatedId);
+      _store._eng.eventController.add(
+        BoxAdded(value, id: generatedId, adapterId: _adapter.adapterId),
+      );
+
+      return Ok(generatedId);
+    } catch (e) {
+      return Err(e.toString());
+    }
   }
 
   @override
-  Future<Result<bool, String>> update(
+  Future<Result<bool, String>> updateByid(
     int id, {
     required T value,
+    bool diskFlush = true,
     IContentWriter contentWriter = const NoneContentWriter(),
   }) async {
-    final remRes = await _store._eng.removeMetaById(id);
-    if (remRes.isErr) {
-      return Err(remRes.unwrapError());
-    }
-    final res = await _store._eng.writeRecord(
-      _adapter.toMetaWriter(value),
-      contentWriter,
-      id: id,
-    );
-    if (res.isOk) {
-      _store._eng.eventController.add(
-        BoxUpdated(value, id: id, adapterId: _adapter.adapterId),
+    try {
+      final remRes = await _store._eng.removeMetaById(id);
+      if (remRes.isErr) {
+        return Err(remRes.unwrapError());
+      }
+      final res = await _store._eng.writeRecord(
+        _adapter.toMetaWriter(value),
+        contentWriter,
+        id: id,
+        diskFlush: diskFlush,
       );
+      if (res.isOk) {
+        value._generatedId = id;
+        value._box = this;
+        _store._eng.eventController.add(
+          BoxUpdated(value, id: id, adapterId: _adapter.adapterId),
+        );
+      }
+      if (res.isErr) {
+        _store._eng.eventController.add(
+          BoxError(
+            id: id,
+            adapterId: _adapter.adapterId,
+            message: res.unwrapError(),
+          ),
+        );
+      }
+      return res;
+    } catch (e) {
+      return Err(e.toString());
     }
-    if (res.isErr) {
-      _store._eng.eventController.add(
-        BoxError(
-          id: id,
-          adapterId: _adapter.adapterId,
-          message: res.unwrapError(),
-        ),
-      );
+  }
+
+  @override
+  Future<Result<bool, String>> updateOne(
+    bool Function(T value) test, {
+    required T value,
+    int? parentId,
+    bool diskFlush = true,
+    IContentWriter contentWriter = const NoneContentWriter(),
+  }) async {
+    try {
+      await for (var val in streamAll(parentId: parentId)) {
+        if (test(val)) {
+          await updateByid(
+            val.generatedId,
+            value: value,
+            contentWriter: contentWriter,
+            diskFlush: diskFlush,
+          );
+          return Ok(true);
+        }
+      }
+      return Ok(false);
+    } catch (e) {
+      return Err(e.toString());
     }
-    return res;
   }
 
   @override
@@ -287,5 +337,26 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       );
     }
     return res;
+  }
+
+  @override
+  Future<Result<bool, String>> delete(
+    bool Function(T value) test, {
+    int? parentId,
+    bool diskFlush = true,
+  }) async {
+    try {
+      await for (var val in streamAll(parentId: parentId)) {
+        if (test(val)) {
+          await val.delete(diskFlush: false);
+        }
+      }
+      if (diskFlush) {
+        return await _store.flush();
+      }
+      return Ok(true);
+    } catch (e) {
+      return Err(e.toString());
+    }
   }
 }

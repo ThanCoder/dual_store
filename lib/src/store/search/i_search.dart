@@ -1,15 +1,8 @@
 // ignore_for_file: unused_field, public_member_api_docs
 
-import 'dart:async';
+part of '../dual_store_base.dart';
 
-import 'package:dual_store/dual_store.dart';
-import 'package:dual_store/src/core/engine/events/du_event_state.dart';
-import 'package:dual_store/src/store/box/i_du_box.dart';
 
-// part 'binary_search.dart';
-part 'linear_search.dart';
-part 'search_event.dart';
-part 'search_event_state.dart';
 
 enum SearchType {
   linear,
