@@ -65,6 +65,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
           final reader = _adapter.toMetaReader(meta.metaData);
           final val = _adapter.fromMap(reader.decode());
           // add private model
+          val._meta = meta;
           val._generatedId = meta.id;
           val._box = this;
           // add list
@@ -237,6 +238,10 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
         return Err(res.unwrapError());
       }
       // set model
+      final meta = _store._eng.ctx.allMeta[generatedId];
+      if (meta != null) {
+        value._meta = meta;
+      }
       value._box = this;
       value._generatedId = generatedId;
 
@@ -269,6 +274,10 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
         diskFlush: diskFlush,
       );
       if (res.isOk) {
+        final meta = _store._eng.ctx.allMeta[id];
+        if (meta != null) {
+          value._meta = meta;
+        }
         value._generatedId = id;
         value._box = this;
         _store._eng.eventController.add(

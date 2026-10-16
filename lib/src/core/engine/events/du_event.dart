@@ -24,7 +24,7 @@ class BoxUpdated<T extends IDuModel> extends BoxEvent {
   new(this.value, {required super.id, required super.adapterId});
 }
 
-class BoxDeleted extends BoxEvent {
+class BoxDeleted<T> extends BoxEvent {
   new({required super.id, required super.adapterId});
 }
 

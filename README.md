@@ -1287,7 +1287,6 @@ class _TodoAppState extends State<TodoApp> {
   @override
   void initState() {
     store.registerAdapter(TodoAdapter());
-    init();
     super.initState();
     store.events.error.all.listen((event) {
       print('[Du Error Event]: $event');
@@ -1302,6 +1301,11 @@ class _TodoAppState extends State<TodoApp> {
     store.events.open.listen((event) {
       checkCompact();
     });
+    store.events.compact.all.listen((event) {
+      print('compact event');
+      checkCompact();
+    });
+    init();
   }
 
   @override
@@ -1317,18 +1321,14 @@ class _TodoAppState extends State<TodoApp> {
 
   Future<void> init() async {
     await store.open(path);
-  }
 
-  void checkCompact() {
-    if (store.state.deletedCount > 0) {
-      if (!mounted) return;
-      setState(() {
-        needToCompact = true;
-      });
-    }
+    // store.events.box.
   }
 
   void addTodo() async {
+    // final ad = store.getAdapterOrNull<Todo>();
+    // print(ad?.);
+    // return;
     final text = await showPromptAlertDialog(
       context,
       'Untitled',
@@ -1346,8 +1346,22 @@ class _TodoAppState extends State<TodoApp> {
     }
   }
 
+  void checkCompact() {
+    if (store.state.deletedCount > 0) {
+      if (!mounted) return;
+      needToCompact = true;
+    } else {
+      needToCompact = false;
+    }
+    setState(() {});
+  }
+
   void compact() async {
-    final res = await store.compact();
+    final res = await store.compact(
+      onCompactProgress: (total, loaded) {
+        print('compress: ${((loaded / total) * 100).toStringAsFixed(2)}%');
+      },
+    );
     if (!mounted) return;
 
     if (res.isErr) {
@@ -1366,71 +1380,65 @@ class _TodoAppState extends State<TodoApp> {
       appBar: AppBar(
         title: Text('Todo'),
         actions: [
+          IconButton(onPressed: init, icon: Icon(Icons.refresh_outlined)),
           if (needToCompact)
             FilledButton(onPressed: compact, child: Text('DB Compact')),
         ],
       ),
-      body: StreamBuilder(
-        stream: store.events.open,
-        builder: (context, asyncSnapshot) {
-          return CustomScrollView(
-            slivers: [
-              StreamBuilder(
-                stream: todoBox.events.all,
-                builder: (context, asyncSnapshot) {
-                  return SliverToBoxAdapter(
-                    child: Container(
-                      padding: .all(10),
-                      decoration: BoxDecoration(
-                        color: col.surfaceContainer,
-                        borderRadius: .circular(15),
+      body: CustomScrollView(
+        slivers: [
+          StreamBuilder(
+            stream: todoBox.getSearchBox(searchType: .linear).getAllStream(),
+            builder: (context, asyncSnapshot) {
+              return SliverToBoxAdapter(
+                child: Container(
+                  padding: .all(10),
+                  decoration: BoxDecoration(
+                    color: col.surfaceContainer,
+                    borderRadius: .circular(15),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'LastId: ${store.state.lastId}',
+                        style: TextStyle(fontSize: 18, fontWeight: .w600),
                       ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'LastId: ${store.state.lastId}',
-                            style: TextStyle(fontSize: 18, fontWeight: .w600),
-                          ),
-                          Text(
-                            'deletedCount: ${store.state.deletedCount}',
-                            style: TextStyle(fontSize: 18, fontWeight: .w600),
-                          ),
-                          Text(
-                            'deletedSize: ${store.state.deletedSize}',
-                            style: TextStyle(fontSize: 18, fontWeight: .w600),
-                          ),
-                        ],
+                      Text(
+                        'deletedCount: ${store.state.deletedCount}',
+                        style: TextStyle(fontSize: 18, fontWeight: .w600),
                       ),
-                    ),
-                  );
-                },
-              ),
-              SliverPadding(padding: .all(10), sliver: _listWidget),
-            ],
-          );
-        },
+                      Text(
+                        'deletedSize: ${store.state.deletedSize}',
+                        style: TextStyle(fontSize: 18, fontWeight: .w600),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          SliverPadding(padding: .all(10), sliver: _listWidget),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(onPressed: addTodo),
+      floatingActionButton: FloatingActionButton(
+        onPressed: addTodo,
+        child: Icon(Icons.add_outlined),
+      ),
     );
   }
 
   Widget get _listWidget {
     return StreamBuilder(
-      stream: todoBox.events.all,
+      stream: todoBox.getSearchBox(searchType: .linear).getAllStream(),
       builder: (context, snapshot) {
-        return FutureBuilder(
-          future: todoBox.getAll(),
-          builder: (context, snapshot) {
-            final list = snapshot.data ?? [];
-            list.sort((a, b) => b.date.compareTo(a.date));
-            return SliverList.separated(
-              separatorBuilder: (context, index) => SizedBox(height: 10),
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                final item = list[index];
-                return _listItem(item);
-              },
-            );
+        final list = snapshot.data ?? [];
+        list.sort((a, b) => b.date.compareTo(a.date));
+        return SliverList.separated(
+          separatorBuilder: (context, index) => SizedBox(height: 10),
+          itemCount: list.length,
+          itemBuilder: (context, index) {
+            final item = list[index];
+            return _listItem(item);
           },
         );
       },
@@ -1473,7 +1481,7 @@ class _TodoAppState extends State<TodoApp> {
                     Checkbox.adaptive(
                       value: item.checked,
                       onChanged: (value) async {
-                        todoBox.update(
+                        todoBox.updateByid(
                           item.generatedId,
                           value: item.copyWith(checked: value),
                         );
@@ -1492,7 +1500,10 @@ class _TodoAppState extends State<TodoApp> {
             ),
             onPressed: () async {
               // todoBox.deleteById(item.generatedId);
-              await item.delete();
+              final res = await item.delete();
+              if (res.isErr) {
+                print(res.unwrapError());
+              }
             },
             label: Text('Delete'),
             icon: Icon(Icons.delete_forever_outlined),
@@ -1502,6 +1513,7 @@ class _TodoAppState extends State<TodoApp> {
     );
   }
 }
+
 
 class Todo extends IDuModel {
   final String title;

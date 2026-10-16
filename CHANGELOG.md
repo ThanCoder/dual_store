@@ -1,3 +1,7 @@
+# 0.4.0
++ Fixed `box`
+
+
 # 0.3.0
 
 * Added `store.getImageBox`

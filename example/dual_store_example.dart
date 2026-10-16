@@ -52,6 +52,7 @@ void testDB() async {
   await store.open('user.du');
 
   final box = store.getBox<User>();
+  // box.events
 
   box.getSearchBox(searchType: .linear).getAllStream().listen((users) {
     print('users: $users');
