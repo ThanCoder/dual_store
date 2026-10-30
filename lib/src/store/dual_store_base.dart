@@ -7,7 +7,6 @@ import 'package:dual_store/src/core/engine/dual_engine.dart';
 import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/events/du_event_state.dart';
 import 'package:dual_store/src/core/engine/logics/compact_logic.dart';
-import 'package:dual_store/src/core/engine/logics/meta_info_logic.dart';
 import 'package:dual_store/src/core/engine/writer/i_content_writer.dart';
 import 'package:dual_store/src/core/file_x.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
