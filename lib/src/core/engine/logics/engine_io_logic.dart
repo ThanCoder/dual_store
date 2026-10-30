@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/interfaces/i_engine_logic.dart';
-import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/result_t.dart';
 
 // ignore: public_member_api_docs
@@ -50,7 +49,7 @@ mixin EngineIoLogic on IEngineLogic {
       ctx.readRaf = file.openSync(mode: FileMode.read);
 
       if (!exists || ctx.writeRaf.lengthSync() == 0) {
-        writeHeader(ctx.writeRaf, const DuHeader(magic: 'dust'));
+        writeHeader(ctx.writeRaf, ctx.config.header);
         await ctx.writeRaf.flush();
       }
 

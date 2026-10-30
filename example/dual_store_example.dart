@@ -42,35 +42,33 @@ void testEncoder() async {
 }
 
 void testDB() async {
+  final st = Stopwatch()..start();
+
   final store = DualStore();
   store.registerAdapter(UserAdapter());
-
-  store.events.all.listen((event) {
-    print('event: $event');
-  });
-
   await store.open('user.du');
+  // store.openAsync('user.du');
+  st.stop();
+  print('opened time: ${st.elapsedMilliseconds}ms');
 
   final box = store.getBox<User>();
-  // box.events
 
-  box.getSearchBox(searchType: .linear).getAllStream().listen((users) {
-    print('users: $users');
+  box.getAllstream().listen((list) {
+    print('stream list: $list');
   });
 
-  // await box.add(.new(name: 'one', age: 21));
-  // await box.add(.new(name: 'two', age: 21));
-  // await box.add(.new(name: 'three', age: 21));
-  // await box.add(.new(name: 'four', age: 12));
-  await box.deleteById(4);
+  // box.add(.new(name: 'four', age: 30));
+  // box.add(.new(name: 'five', age: 30));
+
+  // await box.delete((value) => value.age == 21);
 
   // print(await box.getAll());
 
-  print('onceInit: ${store.onceInit}');
-  print('opened: ${store.opened}');
-  print('lastId: ${store.state.lastId}');
-  print('deletedCount: ${store.state.deletedCount}');
-  print('deletedSize: ${store.state.deletedSize}');
+  // print('onceInit: ${store.onceInit}');
+  // print('opened: ${store.opened}');
+  // print('lastId: ${store.state.lastId}');
+  // print('deletedCount: ${store.state.deletedCount}');
+  // print('deletedSize: ${store.state.deletedSize}');
 
   await store.close();
 }
@@ -90,6 +88,26 @@ class UserAdapter extends IDuBinaryMetaAdapter<User> {
   }
 }
 
+class EmailAdapter extends IDuBinaryMetaAdapter<Email> {
+  @override
+  int get adapterId => 2;
+
+  @override
+  int parentId(Email value) {
+    return value.userId;
+  }
+
+  @override
+  Email fromMap(Map<String, dynamic> map) {
+    return .fromJson(map);
+  }
+
+  @override
+  Map<String, dynamic> toMap(Email value) {
+    return value.toJson();
+  }
+}
+
 class User extends IDuModel {
   final String name;
   final int age;
@@ -104,5 +122,20 @@ class User extends IDuModel {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(name: json['name'], age: json['age']);
+  }
+}
+
+class Email extends IDuModel {
+  final int userId;
+  final String email;
+
+  Email({required this.userId, required this.email});
+
+  Map<String, dynamic> toJson() {
+    return {'userId': userId, 'email': email};
+  }
+
+  factory Email.fromJson(Map<String, dynamic> json) {
+    return Email(userId: json['userId'], email: json['email']);
   }
 }

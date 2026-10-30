@@ -5,7 +5,32 @@ part of '../dual_store_base.dart';
 class DuBox<T extends IDuModel> implements IDuBox<T> {
   final IDuMetaAdapter<T> _adapter;
   final IDualStore _store;
-  new({required this._adapter, required this._store});
+  new({required this._adapter, required this._store}) {
+    _initEventListener();
+  }
+  int? _parentId;
+  void _initEventListener() {
+    _allEvent
+        .where((e) => e is BoxAdded || e is BoxUpdated || e is BoxDeleted)
+        .listen((e) {
+          // လိုအပ်ရင် parentId ကို global သိမ်းထားတာမျိုး (သို့)
+          // event ထဲကနေ parentId ဆွဲထုတ်တာမျိုး လုပ်နိုင်ပါတယ်
+          _fetchAndAddData(parentId: _parentId);
+        });
+  }
+
+  //*********Events******************/
+  late final _allEvent = _store._eng.events.box.all.where(
+    (e) => e.adapterId == _adapter.adapterId,
+  );
+  late final events = DuBoxEvent(
+    all: _allEvent,
+    add: _allEvent.whereType<BoxAdded>(),
+    update: _allEvent.whereType<BoxUpdated>(),
+    delete: _allEvent.whereType<BoxDeleted>(),
+    readMetaError: _allEvent.whereType<BoxReadMetaError>(),
+    error: _allEvent.whereType<BoxError>(),
+  );
 
   /// registred adapter id
   int get adapterId => _adapter.adapterId;
@@ -27,20 +52,28 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     return sh as ISearch<T>;
   }
 
-  //*********Events******************/
-  late final _allEvent = _store._eng.events.box.all.where(
-    (e) => e.adapterId == _adapter.adapterId,
-  );
-  late final events = DuBoxEvent(
-    all: _allEvent,
-    add: _allEvent.whereType<BoxAdded>(),
-    update: _allEvent.whereType<BoxUpdated>(),
-    delete: _allEvent.whereType<BoxDeleted>(),
-    readMetaError: _allEvent.whereType<BoxReadMetaError>(),
-    error: _allEvent.whereType<BoxError>(),
-  );
+  final _getAllStreamCon = StreamController<List<T>>.broadcast();
 
   //*********stream******************/
+  @override
+  Stream<List<T>> getAllstream({int? parentId}) {
+    _parentId = parentId;
+    _fetchAndAddData(parentId: parentId);
+    return _getAllStreamCon.stream;
+  }
+
+  // ဒေတာကို ဆွဲထုတ်ပြီး Stream ထဲ ထည့်ပေးမည့် Helper Method
+  Future<void> _fetchAndAddData({int? parentId}) async {
+    try {
+      final list = await getAll(
+        parentId: parentId,
+      ); // parentId လိုရင် ထည့်သုံးပါ
+      _getAllStreamCon.add(list);
+    } catch (e) {
+      _getAllStreamCon.addError(e);
+    }
+  }
+
   @override
   Stream<T?> streamOne({int? parentId}) async* {
     await for (var val in streamAll(parentId: parentId)) {

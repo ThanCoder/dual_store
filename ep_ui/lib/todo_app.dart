@@ -119,7 +119,7 @@ class _TodoAppState extends State<TodoApp> {
       body: CustomScrollView(
         slivers: [
           StreamBuilder(
-            stream: todoBox.getSearchBox(searchType: .linear).getAllStream(),
+            stream: todoBox.getAllstream(),
             builder: (context, asyncSnapshot) {
               return SliverToBoxAdapter(
                 child: Container(
@@ -160,7 +160,7 @@ class _TodoAppState extends State<TodoApp> {
 
   Widget get _listWidget {
     return StreamBuilder(
-      stream: todoBox.getSearchBox(searchType: .linear).getAllStream(),
+      stream: todoBox.getAllstream(),
       builder: (context, snapshot) {
         final list = snapshot.data ?? [];
         list.sort((a, b) => b.date.compareTo(a.date));

@@ -6,6 +6,9 @@ import 'package:dual_store/src/result_t.dart';
 import '../dual_store_base.dart';
 
 abstract class IDuBox<T extends IDuModel> {
+  /// Streams all models.
+  Stream<List<T>> getAllstream({int? parentId});
+
   /// first one
   Future<T?> getOne({int? parentId});
 

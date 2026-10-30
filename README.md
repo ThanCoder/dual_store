@@ -6,86 +6,73 @@ It provides typed boxes, model adapters, persistent storage, database events, da
 
 ### Example List
 
-* [x] [Dart Example](#dart-example)
-* [x] [DualStore Todo Example](#dualstore-todo-example)
-* [x] [Full Flutter App Example](#flutter-app-example)
-* [x] [Screenshot](#screenshot)
-* [x] [Image Box Example](#image-box-example)
-* [x] [Custom Adapter](#custom-adapter)
-* [x] [Custom Box](#custom-box)
-
+- [x] [Dart Example](#dart-example)
+- [x] [DualStore Todo Example](#dualstore-todo-example)
+- [x] [Full Flutter App Example](#flutter-app-example)
+- [x] [Screenshot](#screenshot)
+- [x] [Image Box Example](#image-box-example)
+- [x] [Custom Adapter](#custom-adapter)
+- [x] [Custom Box](#custom-box)
+- [x] [Custom parentId](#custom-parentid)
+- [x] [Reader Store Header](#reader-store-header)
 
 ## Features
 
 ### Core Database
 
-* 📦 **Typed Boxes**
+- 📦 **Typed Boxes**
+  - Store and retrieve strongly typed `IDuModel` objects.
+  - Access data through `DuBox<T>`.
 
-  * Store and retrieve strongly typed `IDuModel` objects.
-  * Access data through `DuBox<T>`.
+- 💾 **Persistent Local Storage**
+  - Store application data in a local database file.
+  - Data remains available after the application is restarted.
 
-* 💾 **Persistent Local Storage**
+- 🔢 **Automatic Record IDs**
+  - Records receive automatically generated IDs.
+  - Access the generated ID through `generatedId`.
 
-  * Store application data in a local database file.
-  * Data remains available after the application is restarted.
+- 🔄 **Database Reload**
+  - Reload the current database from disk.
+  - Reload conditionally when the database is not already opened.
 
-* 🔢 **Automatic Record IDs**
+- 📂 **Change Database Path**
+  - Change the active database file path.
 
-  * Records receive automatically generated IDs.
-  * Access the generated ID through `generatedId`.
-
-* 🔄 **Database Reload**
-
-  * Reload the current database from disk.
-  * Reload conditionally when the database is not already opened.
-
-* 📂 **Change Database Path**
-
-  * Change the active database file path.
-
-* 🔒 **Database Lifecycle Management**
-
-  * Open, reload, flush, and close the database explicitly.
+- 🔒 **Database Lifecycle Management**
+  - Open, reload, flush, and close the database explicitly.
 
 ### Model & Adapter System
 
-* 🧩 **Custom Model Adapters**
+- 🧩 **Custom Model Adapters**
+  - Register custom model types with `IDuMetaAdapter`.
+  - Convert Dart models to storage-compatible maps.
+  - Restore models from stored data.
 
-  * Register custom model types with `IDuMetaAdapter`.
-  * Convert Dart models to storage-compatible maps.
-  * Restore models from stored data.
-
-* 🏷️ **Type-based Box Access**
-
-  * Retrieve a box using the model type:
+- 🏷️ **Type-based Box Access**
+  - Retrieve a box using the model type:
 
 ```dart
 final todoBox = store.getBox<Todo>();
 ```
 
-* 📝 **Custom Serialization**
-
-  * Models can define their own serialization logic.
-  * `toMap()` and `fromMap()` control how model data is stored.
+- 📝 **Custom Serialization**
+  - Models can define their own serialization logic.
+  - `toMap()` and `fromMap()` control how model data is stored.
 
 ### Reactive Events
 
-* ⚡ **Database Events**
+- ⚡ **Database Events**
+  - Listen for database lifecycle events.
 
-  * Listen for database lifecycle events.
+- 📦 **Box Events**
+  - Listen for changes made to boxes.
 
-* 📦 **Box Events**
+- ❌ **Error Events**
+  - Receive database errors through the event system.
 
-  * Listen for changes made to boxes.
-
-* ❌ **Error Events**
-
-  * Receive database errors through the event system.
-
-* 🔄 **Flutter Reactive UI**
-
-  * Integrates naturally with `StreamBuilder` and other stream-based UI architectures.
-
+- 🔄 **Flutter Reactive UI**
+  - Integrates naturally with `StreamBuilder` and other stream-based UI architectures.
 
 Example:
 
@@ -107,27 +94,25 @@ store.state.deletedSize
 
 Available state information includes:
 
-* Current/last generated record ID
-* Number of deleted records
-* Storage size occupied by deleted records
-* Current database state
+- Current/last generated record ID
+- Number of deleted records
+- Storage size occupied by deleted records
+- Current database state
 
 This information can be used to monitor database usage and determine when maintenance is required.
 
 ### Database Maintenance
 
-* 🧹 **Database Compaction**
-
-  * Reclaim space occupied by deleted records.
-  * Reduce unused storage inside the database file.
+- 🧹 **Database Compaction**
+  - Reclaim space occupied by deleted records.
+  - Reduce unused storage inside the database file.
 
 ```dart
 final result = await store.compact();
 ```
 
-* 💽 **Flush to Disk**
-
-  * Explicitly flush database contents to disk.
+- 💽 **Flush to Disk**
+  - Explicitly flush database contents to disk.
 
 ```dart
 final result = await store.flush();
@@ -193,9 +178,9 @@ final result = await store.open('/path/to/database.du');
 
 The result contains:
 
-* `Ok(true)` when the database is opened
-* `Ok(false)` when applicable according to the operation
-* `Err(String)` when an error occurs
+- `Ok(true)` when the database is opened
+- `Ok(false)` when applicable according to the operation
+- `Err(String)` when an error occurs
 
 You can also check whether the database is currently opened:
 
@@ -442,7 +427,7 @@ This makes it possible for an application to decide when database compaction sho
 
 ### image box example
 
-* [x] [Go Example List](#example-list)
+- [x] [Go Example List](#example-list)
 
 ```dart
   final ad = st.getImageFileAdapter;
@@ -472,7 +457,7 @@ This makes it possible for an application to decide when database compaction sho
 
 ### Custom Adapter
 
-* [x] [Go Example List](#example-list)
+- [x] [Go Example List](#example-list)
 
 ```dart
 class User extends IDuModel {
@@ -515,7 +500,8 @@ class UserAdapter extends IDuBinaryMetaAdapter<User> {
 
 ### Custom Box
 
-* [x] [Go Example List](#example-list)
+- [x] [Go Example List](#example-list)
+
 ```dart
 final userBox = store.getBox<User>();
 userBox.getAll();
@@ -525,6 +511,107 @@ userBox.deleteById(id);
 userBox.events.all.listen((event) {
   print('user event: $event');
 });
+```
+
+### Reader Store Header
+
+- [x] [Go Example List](#example-list)
+
+```dart
+final res = await DualStore.readHeader('user.du');
+// final res = DualStore.readHeaderSync('user.du');
+
+
+switch (res) {
+  case Ok(value: final val):
+    print('header: $val');
+  case Err(value: final err):
+    print('Err: $err');
+}
+```
+
+### Custom parentId
+
+- [x] [Go Example List](#example-list)
+
+```dart
+final emailBox = store.getBox<Email>();
+  // use  @override
+  // int parentId(Email value) {
+  //   return value.userId;
+  // }
+  emailBox.getAllstream(parentId: ["your user generated id"]).listen((emailList) {
+    print('email parent id');
+  });
+
+
+  class UserAdapter extends IDuBinaryMetaAdapter<User> {
+  @override
+  int get adapterId => 1;
+
+  @override
+  User fromMap(Map<String, dynamic> map) {
+    return User.fromJson(map);
+  }
+
+  @override
+  Map<String, dynamic> toMap(User value) {
+    return value.toJson();
+  }
+}
+
+class EmailAdapter extends IDuBinaryMetaAdapter<Email> {
+  @override
+  int get adapterId => 2;
+
+  @override
+  int parentId(Email value) {
+    return value.userId; // add -> parentId
+  }
+
+  @override
+  Email fromMap(Map<String, dynamic> map) {
+    return .fromJson(map);
+  }
+
+  @override
+  Map<String, dynamic> toMap(Email value) {
+    return value.toJson();
+  }
+}
+
+class User extends IDuModel {
+  final String name;
+  final int age;
+  User({required this.name, required this.age});
+
+  @override
+  String toString() => '''User(ID: $generatedId, name: $name, age: $age)''';
+
+  Map<String, dynamic> toJson() {
+    return {'name': name, 'age': age};
+  }
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(name: json['name'], age: json['age']);
+  }
+}
+
+class Email extends IDuModel {
+  final int userId;
+  final String email;
+
+  Email({required this.userId, required this.email});
+
+  Map<String, dynamic> toJson() {
+    return {'userId': userId, 'email': email};
+  }
+
+  factory Email.fromJson(Map<String, dynamic> json) {
+    return Email(userId: json['userId'], email: json['email']);
+  }
+}
+
 ```
 
 # Result API
@@ -660,25 +747,25 @@ The application works with typed models and boxes, while the engine handles the 
 
 | Feature                             | Supported |
 | ----------------------------------- | :-------: |
-| Persistent local database           |     ✅     |
-| Typed `DuBox<T>`                    |     ✅     |
-| Custom model adapters               |     ✅     |
-| Automatic record IDs                |     ✅     |
-| Add records                         |     ✅     |
-| Update records                      |     ✅     |
-| Delete records                      |     ✅     |
-| Database events                     |     ✅     |
-| Box events                          |     ✅     |
-| Error events                        |     ✅     |
-| Database state                      |     ✅     |
-| Database reload                     |     ✅     |
-| Conditional open                    |     ✅     |
-| Change database path                |     ✅     |
-| Flush to disk                       |     ✅     |
-| Database close                      |     ✅     |
-| Database compaction                 |     ✅     |
-| `Result<T, String>` API             |     ✅     |
-| Flutter `StreamBuilder` integration |     ✅     |
+| Persistent local database           |    ✅     |
+| Typed `DuBox<T>`                    |    ✅     |
+| Custom model adapters               |    ✅     |
+| Automatic record IDs                |    ✅     |
+| Add records                         |    ✅     |
+| Update records                      |    ✅     |
+| Delete records                      |    ✅     |
+| Database events                     |    ✅     |
+| Box events                          |    ✅     |
+| Error events                        |    ✅     |
+| Database state                      |    ✅     |
+| Database reload                     |    ✅     |
+| Conditional open                    |    ✅     |
+| Change database path                |    ✅     |
+| Flush to disk                       |    ✅     |
+| Database close                      |    ✅     |
+| Database compaction                 |    ✅     |
+| `Result<T, String>` API             |    ✅     |
+| Flutter `StreamBuilder` integration |    ✅     |
 
 ---
 
@@ -686,13 +773,13 @@ The application works with typed models and boxes, while the engine handles the 
 
 DualStore is designed around a few simple goals:
 
-* Keep the database API small and easy to understand.
-* Provide strongly typed access to stored models.
-* Avoid unnecessary dependencies.
-* Make database errors explicit through `Result`.
-* Provide event streams for reactive applications.
-* Keep database maintenance accessible through a simple API.
-* Work naturally with Dart and Flutter applications.
+- Keep the database API small and easy to understand.
+- Provide strongly typed access to stored models.
+- Avoid unnecessary dependencies.
+- Make database errors explicit through `Result`.
+- Provide event streams for reactive applications.
+- Keep database maintenance accessible through a simple API.
+- Work naturally with Dart and Flutter applications.
 
 ---
 
@@ -735,47 +822,42 @@ Close Database
 
 ### Screenshot
 
-* [x] [Go Example List](#example-list)
-
+- [x] [Go Example List](#example-list)
 
 <p align="center">
   <img src="https://github.com/ThanCoder/dual_store/blob/main/screenshots/d-1.png?raw=true"
      /></p>
 
-
 ## DualStore Todo Example
 
-* [x] [Go Example List](#example-list)
+- [x] [Go Example List](#example-list)
 
 A simple Flutter Todo application demonstrating how to use **DualStore** for local persistent storage.
 
-
-
-
 This example shows how to:
 
-* Open and close a `DualStore` database
-* Register a custom model adapter
-* Create a typed `DuBox<T>`
-* Add, update, and delete records
-* Listen to database and box events
-* Read database state such as `lastId`, `deletedCount`, and `deletedSize`
-* Detect when database compaction is needed
-* Compact the database
-* Use `IDuModel` with generated record IDs
-* Store custom Dart models using JSON-based adapters
+- Open and close a `DualStore` database
+- Register a custom model adapter
+- Create a typed `DuBox<T>`
+- Add, update, and delete records
+- Listen to database and box events
+- Read database state such as `lastId`, `deletedCount`, and `deletedSize`
+- Detect when database compaction is needed
+- Compact the database
+- Use `IDuModel` with generated record IDs
+- Store custom Dart models using JSON-based adapters
 
 ## Features
 
-* Add new Todo items
-* Mark Todo items as completed
-* Delete Todo items
-* Display automatically generated record IDs
-* Display Todo creation dates
-* Monitor database statistics
-* Detect deleted records
-* Compact the database when deleted records exist
-* Reactive UI updates using `StreamBuilder`
+- Add new Todo items
+- Mark Todo items as completed
+- Delete Todo items
+- Display automatically generated record IDs
+- Display Todo creation dates
+- Monitor database statistics
+- Detect deleted records
+- Compact the database when deleted records exist
+- Reactive UI updates using `StreamBuilder`
 
 ## Data Model
 
@@ -1222,8 +1304,10 @@ Compact Database
        ↓
 Close Store
 ```
+
 ## Dart Example
-* [x] [Go Example List](#example-list)
+
+- [x] [Go Example List](#example-list)
 
 ```dart
  final st = DualStore();
@@ -1243,6 +1327,11 @@ Close Store
   //await st.compact();
 
   DuBox<User> box = st.getBox<User>();
+
+  ///stream all
+  box.getAllstream().listen((list) {
+    print('stream list: $list');
+  });
 
   // await box.add(
   //   .new(name: 'two', age: 20, tags: ['one', 'two', 'three']),
@@ -1270,10 +1359,10 @@ Close Store
 
   await st.close();
 ```
+
 ## Flutter App Example
 
-* [x] [Go Example List](#example-list)
-
+- [x] [Go Example List](#example-list)
 
 ```dart
 class TodoApp extends StatefulWidget {

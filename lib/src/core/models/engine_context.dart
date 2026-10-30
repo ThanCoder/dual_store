@@ -3,11 +3,13 @@ import 'dart:io';
 
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/core/models/meta.dart';
+import 'package:dual_store/src/store/du_store_config.dart';
 
 class EngineContext {
   late RandomAccessFile writeRaf;
   late RandomAccessFile readRaf;
-  DuHeader header = .new(magic: 'dust');
+  late DuStoreConfig config;
+  DuHeader header = const .new(magic: 'dust');
 
   int lastId;
   int deletedCount;

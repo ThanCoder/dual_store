@@ -7,6 +7,7 @@ sealed class IDualStore {
   final _adapters = <Type, IDuMetaAdapter>{};
   final _boxs = <Type, DuBox>{};
   final _buildinBoxs = <Type, dynamic>{};
+  DuStoreConfig get config;
 
   /// get box model
   ///
@@ -71,11 +72,13 @@ sealed class IDualStore {
 
   /// open database
   Future<Result<bool, String>> open(String path) async {
+    _eng.ctx.config = config;
     return await _eng.open(path);
   }
 
   /// open database async
   Result<bool, String> openAsync(String path) {
+     _eng.ctx.config = config;
     return _eng.openAsync(path);
   }
 
