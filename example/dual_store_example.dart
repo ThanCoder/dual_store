@@ -51,9 +51,10 @@ void testDB() async {
   st.stop();
   print('opened time: ${st.elapsedMilliseconds}ms');
 
-  store.removeAdapter();
-
+  
   final box = store.getBox<User>();
+
+  
 
   box.getAllstream().listen((list) {
     print('stream list: $list');

@@ -1,3 +1,8 @@
+# 0.6.1
+
+* Error Fixed `box.getById(id)`
+* Added `store.removeAdapter()`,`store.replaceAdapter()` Not Tested!.
+
 # 0.5.0
 
 - Added `box.getAllstream()`

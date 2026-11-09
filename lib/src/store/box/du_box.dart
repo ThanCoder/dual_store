@@ -166,6 +166,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
       final val = _adapter.fromMap(reader.decode());
       val._generatedId = meta.id;
       val._box = this;
+      val._meta = meta;
 
       return Ok(val);
     } catch (e) {
