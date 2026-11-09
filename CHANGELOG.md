@@ -1,4 +1,4 @@
-# 0.6.1
+# 0.6.0
 
 * Error Fixed `box.getById(id)`
 * Added `store.removeAdapter()`,`store.replaceAdapter()` Not Tested!.
