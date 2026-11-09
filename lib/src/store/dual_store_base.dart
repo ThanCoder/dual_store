@@ -77,6 +77,39 @@ class DualStore extends IDualStore with ImageStoreLogic {
     }
   }
 
+  /// replace adapter && box
+  /// 
+  /// if old box and it will close and replace
+  void replaceAdapter<T extends IDuModel>(IDuMetaAdapter<T> adapter) {
+    // replace adapter
+    _adapters[T] = adapter;
+
+    final box = _boxs[T];
+    // old box close
+    if (box != null) {
+      box._getAllStreamCon.close();
+      for (var sh in box._searchBox.values) {
+        sh._evCon.close();
+      }
+      _boxs.remove(T);
+    }
+    // new box
+    _boxs[T] = DuBox<T>(adapter: adapter, store: this);
+  }
+
+  /// it will remove `adapter`,`box`
+  void removeAdapter<T extends IDuModel>() {
+    _adapters.remove(T);
+    final box = _boxs[T];
+
+    if (box == null) return;
+    box._getAllStreamCon.close();
+    for (var sh in box._searchBox.values) {
+      sh._evCon.close();
+    }
+    _boxs.remove(T);
+  }
+
   /// database cleanup
   Future<Result<bool, String>> compact({
     CompactProgress? onCompactProgress,

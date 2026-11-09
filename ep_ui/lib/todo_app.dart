@@ -212,7 +212,7 @@ class _TodoAppState extends State<TodoApp> {
                     Checkbox.adaptive(
                       value: item.checked,
                       onChanged: (value) async {
-                        todoBox.updateByid(
+                        todoBox.updateById(
                           item.generatedId,
                           value: item.copyWith(checked: value),
                         );

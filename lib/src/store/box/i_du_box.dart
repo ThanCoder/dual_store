@@ -57,7 +57,7 @@ abstract class IDuBox<T extends IDuModel> {
   /// `NoneContentWriter`,
   ///
   /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
-  Future<Result<bool, String>> updateByid(
+  Future<Result<bool, String>> updateById(
     int id, {
     bool diskFlush = true,
     required T value,

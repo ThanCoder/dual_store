@@ -289,7 +289,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<bool, String>> updateByid(
+  Future<Result<bool, String>> updateById(
     int id, {
     required T value,
     bool diskFlush = true,
@@ -343,7 +343,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     try {
       await for (var val in streamAll(parentId: parentId)) {
         if (test(val)) {
-          await updateByid(
+          await updateById(
             val.generatedId,
             value: value,
             contentWriter: contentWriter,
