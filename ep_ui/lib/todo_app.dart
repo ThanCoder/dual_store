@@ -3,7 +3,7 @@
 import 'package:ep_ui/dialog/error_alert_dialog.dart';
 import 'package:ep_ui/dialog/prompt_alert_dialog.dart';
 import 'package:ep_ui/dialog/success_alert_dialog.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'package:dual_store/dual_store.dart';
 
