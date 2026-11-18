@@ -15,6 +15,20 @@ sealed class IDualStore {
   /// final box = store.getBox<Todo>();
   /// print(box);
   ///
+  DuBox<T> box<T extends IDuModel>() {
+    final box = _boxs[T];
+    if (box == null) {
+      throw Exception('Need To Register $T Adapter!');
+    }
+    return box as DuBox<T>;
+  }
+
+  /// get box model
+  ///
+  /// ```dart
+  /// final box = store.getBox<Todo>();
+  /// print(box);
+  ///
   DuBox<T> getBox<T extends IDuModel>() {
     final box = _boxs[T];
     if (box == null) {
@@ -30,6 +44,20 @@ sealed class IDualStore {
   /// print(box?);
   ///
   DuBox<T>? getBoxOrNull<T extends IDuModel>() {
+    final box = _boxs[T];
+    if (box != null) {
+      return box as DuBox<T>;
+    }
+    return null;
+  }
+
+  /// get box model nullable
+  ///
+  /// ```dart
+  /// final box = store.getBoxOrNull<Todo>();
+  /// print(box?);
+  ///
+  DuBox<T>? boxOrNull<T extends IDuModel>() {
     final box = _boxs[T];
     if (box != null) {
       return box as DuBox<T>;
@@ -78,7 +106,7 @@ sealed class IDualStore {
 
   /// open database async
   Result<bool, String> openAsync(String path) {
-     _eng.ctx.config = config;
+    _eng.ctx.config = config;
     return _eng.openAsync(path);
   }
 

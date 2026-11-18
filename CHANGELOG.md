@@ -1,3 +1,9 @@
+# 0.8.0
+
+- Modified `box.add` -> Return `<T>`
+- Modified `box.updateById` -> Return `<T>`
+- Modified `box.updateOne` -> Return `<T>`
+
 # 0.7.0
 
 - Modified `box.imageBox`

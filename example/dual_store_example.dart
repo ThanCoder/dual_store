@@ -51,29 +51,10 @@ void testDB() async {
   st.stop();
   print('opened time: ${st.elapsedMilliseconds}ms');
 
-  // await store.imageBox.add(
-  //   .fromBytes(
-  //     .new(5),
-  //     name: 'test four',
-  //     ext: 'png',
-  //     lastModified: .now(),
-  //     parentId: 1,
-  //   ),
-  // );
-  final imgs = await store.getImageBox.getAll();
-  for (var img in imgs) {
-    print(img);
-  }
-  print('search');
-  final img2s = await store.imageBox.findOne(
-    (file) => file.name == 'test three-',
-  );
-  // for (var img in img2s) {
-  //   print(img);
-  // }
-  print(img2s);
-
   final box = store.getBox<User>();
+  // box.updateById(id, value: value)
+
+  // final res = await box.add(value);
 
   // box.getAllstream().listen((list) {
   //   print('stream list: $list');

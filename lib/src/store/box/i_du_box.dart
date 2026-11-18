@@ -41,8 +41,8 @@ abstract class IDuBox<T extends IDuModel> {
   ///
   /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
   ///
-  /// Return -> `created id`
-  Future<Result<int, String>> add(
+  /// Return -> `created T`
+  Future<Result<T, String>> add(
     T value, {
 
     /// Supported:
@@ -57,7 +57,7 @@ abstract class IDuBox<T extends IDuModel> {
   /// `NoneContentWriter`,
   ///
   /// `TextRawContentWriter`,`JsonRawContentWriter`,`TextCompressContentWriter`
-  Future<Result<bool, String>> updateById(
+  Future<Result<T, String>> updateById(
     int id, {
     bool diskFlush = true,
     required T value,
@@ -70,7 +70,7 @@ abstract class IDuBox<T extends IDuModel> {
   });
 
   /// update one
-  Future<Result<bool, String>> updateOne(
+  Future<Result<T, String>> updateOne(
     bool Function(T value) test, {
     bool diskFlush = true,
     required T value,

@@ -248,7 +248,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   }
 
   @override
-  Future<Result<int, String>> add(
+  Future<Result<T, String>> add(
     T value, {
     IContentWriter contentWriter = const NoneContentWriter(),
     bool diskFlush = true,
@@ -283,14 +283,14 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
         BoxAdded(value, id: generatedId, adapterId: _adapter.adapterId),
       );
 
-      return Ok(generatedId);
+      return Ok(value);
     } catch (e) {
       return Err(e.toString());
     }
   }
 
   @override
-  Future<Result<bool, String>> updateById(
+  Future<Result<T, String>> updateById(
     int id, {
     required T value,
     bool diskFlush = true,
@@ -327,14 +327,14 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
           ),
         );
       }
-      return res;
+      return Ok(value);
     } catch (e) {
       return Err(e.toString());
     }
   }
 
   @override
-  Future<Result<bool, String>> updateOne(
+  Future<Result<T, String>> updateOne(
     bool Function(T value) test, {
     required T value,
     int? parentId,
@@ -344,16 +344,16 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
     try {
       await for (var val in streamAll(parentId: parentId)) {
         if (test(val)) {
-          await updateById(
+          final res = await updateById(
             val.generatedId,
             value: value,
             contentWriter: contentWriter,
             diskFlush: diskFlush,
           );
-          return Ok(true);
+          return res;
         }
       }
-      return Ok(false);
+      return Err('DB Not Found!');
     } catch (e) {
       return Err(e.toString());
     }
