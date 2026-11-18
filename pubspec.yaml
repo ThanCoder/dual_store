@@ -1,11 +1,11 @@
 name: dual_store
 description: A high-performance, binary-based storage engine for Dart. Optimized for small metadata and multi-gigabyte big data using streaming and sequential byte mapping.
-version: 0.6.0
+version: 0.7.0
 repository: https://github.com/ThanCoder/dual_store
 homepage: https://pub.dev/packages/dual_store
 
 environment:
-  sdk: ^3.13.0
+  sdk: ^3.14.0
 
 dev_dependencies:
   lints: ^6.0.0

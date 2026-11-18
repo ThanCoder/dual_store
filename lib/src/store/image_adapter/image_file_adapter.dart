@@ -7,6 +7,9 @@ class ImageFileAdapter extends IDuBinaryMetaAdapter<ImageFile> {
   int get adapterId => 200;
 
   @override
+  int parentId(ImageFile value) => value.parentId;
+
+  @override
   ImageFile fromMap(Map<String, dynamic> map) {
     return .fromJson(map);
   }
@@ -23,6 +26,7 @@ class ImageFile extends IImageDuModel {
   final int size;
   final DateTime date;
   final Map<String, dynamic> extra;
+  final int parentId;
 
   ImageFile({
     required this.name,
@@ -31,10 +35,15 @@ class ImageFile extends IImageDuModel {
     required this.date,
     required this.extra,
     this._data,
+    this.parentId = -1,
   });
   Uint8List? _data;
 
-  factory ImageFile.fromFile(File file, {Map<String, dynamic>? extra}) {
+  factory ImageFile.fromFile(
+    File file, {
+    Map<String, dynamic>? extra,
+    int parentId = -1,
+  }) {
     return .new(
       name: file.name,
       ext: file.ext,
@@ -42,6 +51,7 @@ class ImageFile extends IImageDuModel {
       date: file.lastModifiedSync(),
       extra: extra ?? {},
       data: file.readAsBytesSync(),
+      parentId: parentId,
     );
   }
 
@@ -51,6 +61,7 @@ class ImageFile extends IImageDuModel {
     required String ext,
     required DateTime lastModified,
     Map<String, dynamic>? extra,
+    int parentId = -1,
   }) {
     return .new(
       name: name,
@@ -59,6 +70,7 @@ class ImageFile extends IImageDuModel {
       date: lastModified,
       extra: extra ?? {},
       data: bytes,
+      parentId: parentId,
     );
   }
 
@@ -69,6 +81,7 @@ class ImageFile extends IImageDuModel {
       'size': size,
       'date': date.millisecondsSinceEpoch,
       'extra': extra,
+      'parentId': parentId,
     };
   }
 
@@ -79,11 +92,12 @@ class ImageFile extends IImageDuModel {
       size: json['size'],
       date: DateTime.fromMillisecondsSinceEpoch(json['date']),
       extra: Map<String, dynamic>.from(json['extra']),
+      parentId: json['parentId'] ?? -1,
     );
   }
 
   @override
   String toString() {
-    return '''ImageFile(name: $name, ext: $ext, size: $size, date: $date, extra: $extra)''';
+    return '''ImageFile(name: $name, ext: $ext, size: $size, date: $date, extra: $extra, parentId: $parentId)''';
   }
 }

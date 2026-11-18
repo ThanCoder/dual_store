@@ -1,14 +1,17 @@
+# 0.7.0
+
+- Modified `box.imageBox`
+
 # 0.6.0
 
-* Error Fixed `box.getById(id)`
-* Added `store.removeAdapter()`,`store.replaceAdapter()` Not Tested!.
+- Error Fixed `box.getById(id)`
+- Added `store.removeAdapter()`,`store.replaceAdapter()` Not Tested!.
 
 # 0.5.0
 
 - Added `box.getAllstream()`
 - Added `DualStore.readHeader(path)`
 - Added `DualStore.readHeaderSync(path)`
-
 
 # 0.4.0
 

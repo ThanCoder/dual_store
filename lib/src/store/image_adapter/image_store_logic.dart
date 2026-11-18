@@ -15,8 +15,14 @@ mixin ImageStoreLogic on IDualStore {
     return ad as ImageFileAdapter;
   }
 
-  ///image box
+  ///get image box
   ImageBox get getImageBox {
+    getImageFileAdapter;
+    return _buildinBoxs[ImageBox];
+  }
+
+  ///get image box
+  ImageBox get imageBox {
     getImageFileAdapter;
     return _buildinBoxs[ImageBox];
   }

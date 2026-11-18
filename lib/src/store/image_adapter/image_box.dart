@@ -29,30 +29,82 @@ class ImageBox {
     return null;
   }
 
+  /// find all image files
+  Future<List<ImageFile>> findAll(
+    bool Function(ImageFile file) onTest, {
+    int? parentId,
+  }) async {
+    final list = <ImageFile>[];
+    try {
+      await for (var val in streamAll(parentId: parentId)) {
+        if (onTest(val)) {
+          list.add(val);
+        }
+      }
+    } catch (e) {
+      _store._eng.eventController.add(
+        DuError('[DuBox:findAll]: ${e.toString()}'),
+      );
+      _store._eng.eventController.add(
+        BoxError(id: -1, adapterId: _adapter.adapterId, message: e.toString()),
+      );
+    }
+    return list;
+  }
+
+  /// find one image file
+  Future<ImageFile?> findOne(
+    bool Function(ImageFile file) onTest, {
+    int? parentId,
+  }) async {
+    try {
+      await for (var val in streamAll(parentId: parentId)) {
+        if (onTest(val)) {
+          return val;
+        }
+      }
+    } catch (e) {
+      _store._eng.eventController.add(
+        DuError('[DuBox:findAll]: ${e.toString()}'),
+      );
+      _store._eng.eventController.add(
+        BoxError(id: -1, adapterId: _adapter.adapterId, message: e.toString()),
+      );
+    }
+    return null;
+  }
+
+  Stream<ImageFile> streamAll({int? parentId}) async* {
+    final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
+
+    if (allMetaIds == null) return;
+
+    for (var metaId in allMetaIds.toList()) {
+      final meta = _store._eng.ctx.allMeta[metaId];
+      if (meta == null) continue;
+
+      if (parentId != null && meta.parentId != parentId) continue;
+      try {
+        final reader = _adapter.toMetaReader(meta.metaData);
+        final val = _adapter.fromMap(reader.decode());
+        // add private model
+        val._meta = meta;
+        val._box = this;
+
+        // add list
+        yield val;
+      } catch (e) {
+        _store._eng.eventController.add(ImageBoxError(meta.id, e.toString()));
+      }
+    }
+  }
+
   ///get all image
   Future<List<ImageFile>> getAll({int? parentId}) async {
     final list = <ImageFile>[];
     try {
-      final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
-      if (allMetaIds == null) return [];
-
-      for (var metaId in allMetaIds.toList()) {
-        final meta = _store._eng.ctx.allMeta[metaId];
-        if (meta == null) continue;
-
-        if (parentId != null && meta.parentId != parentId) continue;
-        try {
-          final reader = _adapter.toMetaReader(meta.metaData);
-          final val = _adapter.fromMap(reader.decode());
-          // add private model
-          val._meta = meta;
-          val._box = this;
-
-          // add list
-          list.add(val);
-        } catch (e) {
-          _store._eng.eventController.add(ImageBoxError(meta.id, e.toString()));
-        }
+      await for (var val in streamAll(parentId: parentId)) {
+        list.add(val);
       }
     } catch (e) {
       _store._eng.eventController.add(
