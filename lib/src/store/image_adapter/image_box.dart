@@ -89,6 +89,7 @@ class ImageBox {
         final val = _adapter.fromMap(reader.decode());
         // add private model
         val._meta = meta;
+        val._generatedId = meta.id;
         val._box = this;
 
         // add list

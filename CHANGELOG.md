@@ -1,3 +1,7 @@
+# 0.9.0
+
+- Fixed `box.imageBox` -> id == -1 error.
+
 # 0.8.0
 
 - Modified `box.add` -> Return `<T>`
