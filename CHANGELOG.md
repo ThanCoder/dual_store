@@ -1,3 +1,7 @@
+# 0.10.0
+
+- Modified `box.imageBox`
+
 # 0.9.0
 
 - Fixed `box.imageBox` -> id == -1 error.

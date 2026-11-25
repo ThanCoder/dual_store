@@ -8,7 +8,6 @@ import 'package:dual_store/src/core/engine/events/du_event.dart';
 import 'package:dual_store/src/core/engine/events/du_event_state.dart';
 import 'package:dual_store/src/core/engine/logics/compact_logic.dart';
 import 'package:dual_store/src/core/engine/writer/i_content_writer.dart';
-import 'package:dual_store/src/core/file_x.dart';
 import 'package:dual_store/src/core/models/du_header.dart';
 import 'package:dual_store/src/core/models/meta.dart';
 import 'package:dual_store/src/result_t.dart';
@@ -16,18 +15,21 @@ import 'package:dual_store/src/store/adapter/i_du_adapter.dart';
 import 'package:dual_store/src/store/box/i_du_box.dart';
 import 'package:dual_store/src/store/du_ctx_state.dart';
 import 'package:dual_store/src/store/du_store_config.dart';
+import 'package:dual_store/src/store/image_adapter/image_file.dart';
 
 part 'adapter/i_du_model.dart';
 part 'box/du_box.dart';
 part 'i_dual_store.dart';
-part 'image_adapter/image_box.dart';
-part 'image_adapter/image_file_adapter.dart';
-part 'image_adapter/image_store_logic.dart';
 part 'search/i_search.dart';
 // part 'search/binary_search.dart';
 part 'search/linear_search.dart';
 part 'search/search_event.dart';
 part 'search/search_event_state.dart';
+// image box
+part 'image_adapter/i_image_box.dart';
+part 'image_adapter/image_box.dart';
+part 'image_adapter/image_data_adapter.dart';
+part 'image_adapter/image_store_logic.dart';
 
 /// du store
 class DualStore extends IDualStore with ImageStoreLogic {
@@ -78,7 +80,7 @@ class DualStore extends IDualStore with ImageStoreLogic {
   }
 
   /// replace adapter && box
-  /// 
+  ///
   /// if old box and it will close and replace
   void replaceAdapter<T extends IDuModel>(IDuMetaAdapter<T> adapter) {
     // replace adapter

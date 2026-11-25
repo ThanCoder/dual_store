@@ -52,26 +52,22 @@ void testDB() async {
   print('opened time: ${st.elapsedMilliseconds}ms');
 
   final box = store.getBox<User>();
-  // box.updateById(id, value: value)
+  final imgBox = store.imageBox;
 
-  // final res = await box.add(value);
+  // await imgBox.deleteAll();
+  final p =
+      '/home/thancoder/Pictures/apocalypse-system-of-lotteries-2c76ab69.webp';
+  final p2 = '/home/thancoder/Pictures/ffmpeg_editor.png';
 
-  // box.getAllstream().listen((list) {
-  //   print('stream list: $list');
-  // });
-
-  // box.add(.new(name: 'four', age: 30));
-  // box.add(.new(name: 'five', age: 30));
-
-  // await box.delete((value) => value.age == 21);
+  // imgBox.deleteById(id)
 
   // print(await box.getAll());
 
   // print('onceInit: ${store.onceInit}');
   // print('opened: ${store.opened}');
   // print('lastId: ${store.state.lastId}');
-  // print('deletedCount: ${store.state.deletedCount}');
-  // print('deletedSize: ${store.state.deletedSize}');
+  print('deletedCount: ${store.state.deletedCount}');
+  print('deletedSize: ${store.state.deletedSize}');
 
   await store.close();
 }

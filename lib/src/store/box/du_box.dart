@@ -23,6 +23,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   late final _allEvent = _store._eng.events.box.all.where(
     (e) => e.adapterId == _adapter.adapterId,
   );
+  @override
   late final events = DuBoxEvent(
     all: _allEvent,
     add: _allEvent.whereType<BoxAdded>(),
@@ -33,6 +34,7 @@ class DuBox<T extends IDuModel> implements IDuBox<T> {
   );
 
   /// registred adapter id
+  @override
   int get adapterId => _adapter.adapterId;
 
   //*********Search******************/

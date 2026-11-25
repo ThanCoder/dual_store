@@ -14,4 +14,5 @@ extension FileX on File {
   int get size {
     return lengthSync();
   }
+  
 }

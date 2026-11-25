@@ -2,17 +2,19 @@
 
 part of '../dual_store_base.dart';
 
-class ImageBox {
-  final IDuMetaAdapter<ImageFile> _adapter;
+class ImageBox extends IImageBox {
+  final IDuMetaAdapter<ImageData> _adapter;
   final IDualStore _store;
   ImageBox({required this._adapter, required this._store});
 
   ///registerd adapter id
+  @override
   int get adapterId => _adapter.adapterId;
 
   late final _allEvent = _store._eng.events.box.all
       .where((e) => e is ImageBoxEvent && e.adapterId == _adapter.adapterId)
       .cast<ImageBoxEvent>();
+  @override
   late final events = ImageBoxEventState(
     all: _allEvent,
     add: _allEvent.whereType<ImageBoxAdded>(),
@@ -21,20 +23,30 @@ class ImageBox {
     error: _allEvent.whereType<ImageBoxError>(),
   );
 
-  ///first one
-  Future<ImageFile?> getOne({int? parentId}) async {
+  @override
+  Future<ImageData?> getById(int generatedId, {int? parentId}) async {
+    await for (var item in streamAll(parentId: parentId)) {
+      if (item.generatedId == generatedId) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<ImageData?> getOne({int? parentId}) async {
     for (var val in await getAll(parentId: parentId)) {
       return val;
     }
     return null;
   }
 
-  /// find all image files
-  Future<List<ImageFile>> findAll(
-    bool Function(ImageFile file) onTest, {
+  @override
+  Future<List<ImageData>> findAll(
+    bool Function(ImageData file) onTest, {
     int? parentId,
   }) async {
-    final list = <ImageFile>[];
+    final list = <ImageData>[];
     try {
       await for (var val in streamAll(parentId: parentId)) {
         if (onTest(val)) {
@@ -52,9 +64,9 @@ class ImageBox {
     return list;
   }
 
-  /// find one image file
-  Future<ImageFile?> findOne(
-    bool Function(ImageFile file) onTest, {
+  @override
+  Future<ImageData?> findOne(
+    bool Function(ImageData file) onTest, {
     int? parentId,
   }) async {
     try {
@@ -74,7 +86,8 @@ class ImageBox {
     return null;
   }
 
-  Stream<ImageFile> streamAll({int? parentId}) async* {
+  @override
+  Stream<ImageData> streamAll({int? parentId}) async* {
     final allMetaIds = _store._eng.ctx.adapterMeta[_adapter.adapterId];
 
     if (allMetaIds == null) return;
@@ -100,9 +113,9 @@ class ImageBox {
     }
   }
 
-  ///get all image
-  Future<List<ImageFile>> getAll({int? parentId}) async {
-    final list = <ImageFile>[];
+  @override
+  Future<List<ImageData>> getAll({int? parentId}) async {
+    final list = <ImageData>[];
     try {
       await for (var val in streamAll(parentId: parentId)) {
         list.add(val);
@@ -118,30 +131,36 @@ class ImageBox {
     return list;
   }
 
-  /// add image
+  @override
   Future<Result<int, String>> add(
-    ImageFile file, {
+    IImageFile file, {
     bool diskFlush = true,
   }) async {
-    final generatedId = _store._eng.ctx.generatedId;
-    final res = await _store._eng.writeRecord(
-      _adapter.toMetaWriter(file),
-      BytesRawContentWriter(bytes: file._data!),
-      id: generatedId,
-      diskFlush: diskFlush,
-    );
-    if (res.isErr) {
-      _store._eng.eventController.add(
-        ImageBoxError(generatedId, res.unwrapError()),
+    try {
+      final imageData = file.toImageData;
+      final imageBytes = await file.toImageBytes;
+      final generatedId = _store._eng.ctx.generatedId;
+      final res = await _store._eng.writeRecord(
+        _adapter.toMetaWriter(imageData),
+        BytesRawContentWriter(bytes: imageBytes),
+        id: generatedId,
+        diskFlush: diskFlush,
       );
-      return Err(res.unwrapError());
-    }
-    _store._eng.eventController.add(ImageBoxAdded(generatedId));
+      if (res.isErr) {
+        _store._eng.eventController.add(
+          ImageBoxError(generatedId, res.unwrapError()),
+        );
+        return Err(res.unwrapError());
+      }
+      _store._eng.eventController.add(ImageBoxAdded(generatedId));
 
-    return Ok(generatedId);
+      return Ok(generatedId);
+    } catch (e) {
+      return Err(e.toString());
+    }
   }
 
-  /// IMAGE  bytes data
+  @override
   Future<Uint8List?> getContent(IImageDuModel value) async {
     final res = await _store._eng.readContent<Uint8List>(value._meta);
     if (res.isErr) {
@@ -155,9 +174,23 @@ class ImageBox {
     return null;
   }
 
-  /// delete image
+  @override
+  Uint8List? getContentSync(IImageDuModel value) {
+    final res = _store._eng.readContentSync<Uint8List>(value._meta);
+    if (res.isErr) {
+      _store._eng.eventController.add(
+        ImageBoxError(value.generatedId, res.unwrapError()),
+      );
+    }
+    if (res.isOk) {
+      return res.unwrap();
+    }
+    return null;
+  }
+
+  @override
   Future<Result<bool, String>> deleteImage(
-    ImageFile file, {
+    ImageData file, {
     bool diskFlush = true,
   }) async {
     final res = await _store._eng.removeMetaById(
@@ -175,7 +208,7 @@ class ImageBox {
     return res;
   }
 
-  /// delete by id
+  @override
   Future<Result<bool, String>> deleteById(
     int id, {
     bool diskFlush = true,
@@ -190,28 +223,76 @@ class ImageBox {
     return res;
   }
 
-  /// update by id
+  @override
   Future<Result<bool, String>> updateById(
     int id, {
-    required ImageFile file,
+    required IImageFile file,
     bool diskFlush = true,
   }) async {
-    final remRes = await _store._eng.removeMetaById(id);
-    if (remRes.isErr) {
-      return Err(remRes.unwrapError());
+    try {
+      final bytes = await file.toImageBytes;
+
+      final remRes = await _store._eng.removeMetaById(id);
+      if (remRes.isErr) {
+        return Err(remRes.unwrapError());
+      }
+      final res = await _store._eng.writeRecord(
+        _adapter.toMetaWriter(file.toImageData),
+        BytesRawContentWriter(bytes: bytes),
+        diskFlush: diskFlush,
+        id: id,
+      );
+      if (res.isOk) {
+        _store._eng.eventController.add(ImageBoxUpdated(id));
+      }
+      if (res.isErr) {
+        _store._eng.eventController.add(ImageBoxError(id, res.unwrapError()));
+      }
+      return res;
+    } catch (e) {
+      return Err(e.toString());
     }
-    final res = await _store._eng.writeRecord(
-      _adapter.toMetaWriter(file),
-      BytesRawContentWriter(bytes: file._data!),
-      diskFlush: diskFlush,
-      id: id,
-    );
-    if (res.isOk) {
-      _store._eng.eventController.add(ImageBoxUpdated(id));
+  }
+
+  @override
+  Future<List<(int, bool)>> deleteAll({
+    bool diskFlush = true,
+    int? parentId,
+  }) async {
+    final results = <(int, bool)>[];
+    await for (var item in streamAll(parentId: parentId)) {
+      final res = await item.delete();
+      results.add((item.generatedId, res.isOk));
     }
-    if (res.isErr) {
-      _store._eng.eventController.add(ImageBoxError(id, res.unwrapError()));
+    return results;
+  }
+
+  @override
+  Future<Result<bool, String>> updateOne(
+    bool Function(ImageData data) test, {
+    required IImageFile file,
+    bool diskFlush = true,
+    int? parentId,
+  }) async {
+    await for (var item in streamAll(parentId: parentId)) {
+      if (test(item)) {
+        return Ok(true);
+      }
     }
-    return res;
+    return Ok(false);
+  }
+
+  @override
+  Future<Result<bool, String>> deleteOne(
+    bool Function(ImageData data) test, {
+    bool diskFlush = true,
+    int? parentId,
+  }) async {
+    await for (var item in streamAll(parentId: parentId)) {
+      if (test(item)) {
+        return await item.delete();
+      }
+    }
+    return Ok(false);
   }
 }

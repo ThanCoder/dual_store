@@ -62,16 +62,17 @@ mixin ContentReaderLogic on IEngineLogic {
           return readContentExactSync(TextCompressContentReader(meta))
               as Result<R, String>;
         }
-        // bytes
-        if (meta.contentDataType == .bytes) {
-          if (meta.contentFlag == .raw) {
-            return readContentExactSync(BytesRawContentReader(meta))
-                as Result<R, String>;
-          }
-          if (meta.contentFlag == .compressed) {
-            return readContentExactSync(BytesCompressContentReader(meta))
-                as Result<R, String>;
-          }
+      }
+
+      // bytes
+      if (meta.contentDataType == .bytes) {
+        if (meta.contentFlag == .raw) {
+          return readContentExactSync(BytesRawContentReader(meta))
+              as Result<R, String>;
+        }
+        if (meta.contentFlag == .compressed) {
+          return readContentExactSync(BytesCompressContentReader(meta))
+              as Result<R, String>;
         }
       }
       // if (meta.contentDataType == .json) {}

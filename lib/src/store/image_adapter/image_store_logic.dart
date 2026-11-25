@@ -4,26 +4,26 @@ part of '../dual_store_base.dart';
 
 mixin ImageStoreLogic on IDualStore {
   /// image adapter
-  ImageFileAdapter get getImageFileAdapter {
-    final ad = _adapters[ImageFileAdapter];
+  ImageDataAdapter get getImageDataAdapter {
+    final ad = _adapters[ImageDataAdapter];
     if (ad == null) {
-      final newAd = ImageFileAdapter();
-      _adapters[ImageFileAdapter] = newAd;
+      final newAd = ImageDataAdapter();
+      _adapters[ImageDataAdapter] = newAd;
       _buildinBoxs[ImageBox] = ImageBox(adapter: newAd, store: this);
       return newAd;
     }
-    return ad as ImageFileAdapter;
+    return ad as ImageDataAdapter;
   }
 
-  ///get image box
-  ImageBox get getImageBox {
-    getImageFileAdapter;
-    return _buildinBoxs[ImageBox];
-  }
+  /// Get image box (deprecated: use [imageBox] instead).
+  @Deprecated('Use imageBox instead.')
+  IImageBox get getImageBox => imageBox;
 
   ///get image box
-  ImageBox get imageBox {
-    getImageFileAdapter;
+  ///
+  /// Registerd ID: `adapterId => 200`
+  IImageBox get imageBox {
+    getImageDataAdapter;
     return _buildinBoxs[ImageBox];
   }
 }

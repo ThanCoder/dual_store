@@ -130,7 +130,17 @@ abstract class IImageDuModel extends IIDuModel {
       }
       return await _box.getContent(this);
     } catch (e) {
-      // return Err(e.toString());
+      return null;
+    }
+  }
+   /// image data
+  Uint8List? get imageDataSync{
+    try {
+      if (!_isSettedBox) {
+        return null;
+      }
+      return _box.getContentSync(this);
+    } catch (e) {
       return null;
     }
   }

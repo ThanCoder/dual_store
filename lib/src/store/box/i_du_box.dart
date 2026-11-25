@@ -1,11 +1,17 @@
-// ignore_for_file: public_member_api_docs
-
+import 'package:dual_store/src/core/engine/events/du_event_state.dart';
 import 'package:dual_store/src/core/engine/writer/i_content_writer.dart';
 import 'package:dual_store/src/result_t.dart';
 
 import '../dual_store_base.dart';
 
+/// dubox interface
 abstract class IDuBox<T extends IDuModel> {
+  /// dubox events
+  DuBoxEvent get events;
+
+  /// registred adapter id
+  int get adapterId;
+
   /// Streams all models.
   Stream<List<T>> getAllstream({int? parentId});
 
@@ -90,8 +96,7 @@ abstract class IDuBox<T extends IDuModel> {
   /// get content data or null
   Future<R?> getContentOrNull<R>(T value);
 
-  // Future<void> delete(T value);
-  // Future<void> updateById(int id, T value, {String? contentValue});
+  /// delete
   Future<Result<bool, String>> deleteById(int id, {bool diskFlush = true});
 
   /// delete
